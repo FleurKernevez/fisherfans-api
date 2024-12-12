@@ -3,6 +3,11 @@
 var utils = require('../utils/writer.js');
 var Boat = require('../service/BoatService');
 
+module.exports.boatDatas = function boatDatas (req, res){
+  console.log('it works')
+  res.send('Boat data received');
+}
+
 /**
  * Fonction pour créer un bateau
  */
