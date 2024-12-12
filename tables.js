@@ -32,7 +32,6 @@ const createUserTable = () => {
             SIRETNumber TEXT,
             RCNumber TEXT,
             companyName TEXT,
-            SIRETNumber TEXT,
             RCNumber TEXT,
             companyName TEXT,
             boatTrip_id INTEGER,
