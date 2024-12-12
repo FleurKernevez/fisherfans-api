@@ -16,4 +16,8 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+router.forEach((route) => {
+  app.use(route);
+});
+
 exports.app = app;
