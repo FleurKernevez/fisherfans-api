@@ -34,12 +34,13 @@ const createUserTable = () => {
             companyName TEXT,
             SIRETNumber TEXT,
             RCNumber TEXT,
-            companyName TEXT, 
-            FOREIGN KEY (boatTrip_id) REFERENCES boatTrip(id)
+            companyName TEXT,
+            boatTrip_id INTEGER,
+            reservation_id INTEGER,
+            FOREIGN KEY (boatTrip_id) REFERENCES boatTrip(id),
             FOREIGN KEY (reservation_id) REFERENCES reservation(id)                
         );
     `;
-    
     // Exécuter la requête pour créer la table
     database.run(query, function(err) {
         if (err) {
@@ -60,9 +61,9 @@ const createBoatTable = () => {
             brand TEXT,
             productionYear INTEGER,
             urlBoatPicture TEXT,
-            licenceType TEXT CHECK(licenceType IN ('côtier', 'fluvial')),                     
-            type TEXT CHECK(type IN ('open', 'cabine', 'catamaran', 'voilier', 'jet-ski', canoë')),
-            equipment TEXT CHECK(equipment IN ('sondeur', 'vivier', 'échelle', 'GPS', 'porte-cannes', 'radio VHF')) ,
+            licenceType TEXT CHECK (licenceType IN ('côtier', 'fluvial')),                     
+            type TEXT CHECK (type IN ('open', 'cabine', 'catamaran', 'voilier', 'jet-ski', 'canoë')),
+            equipment TEXT CHECK (equipment IN ('sondeur', 'vivier', 'échelle', 'GPS', 'porte-cannes', 'radio VHF')),
             cautionAmount REAL,
             capacityMax INTEGER,
             bedsNumber INTEGER,
@@ -73,6 +74,7 @@ const createBoatTable = () => {
             longitude2 REAL,
             engineType TEXT CHECK(engineType IN ('diesel', 'essence', 'aucun')),
             enginePower INTEGER,
+            user_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES user(id)
         );
     `;
@@ -100,8 +102,11 @@ const createBoatTripTable = () => {
             endDate TEXT,
             passengersNumber INTEGER,
             price REAL,
-            FOREIGN KEY (user_id) REFERENCES user(id)
-            FOREIGN KEY (boat_id) REFERENCES boat(id)
+            user_id INTEGER,
+            boat_id INTEGER,
+            reservation_id INTEGER,
+            FOREIGN KEY (user_id) REFERENCES user(id),
+            FOREIGN KEY (boat_id) REFERENCES boat(id),
             FOREIGN KEY (reservation_id) REFERENCES reservation(id)   
         );
     `;
@@ -109,9 +114,9 @@ const createBoatTripTable = () => {
     // Exécuter la requête pour créer la table
     database.run(query, function(err) {
         if (err) {
-            console.error('Erreur lors de la création de la table "boat":', err.message);
+            console.error('Erreur lors de la création de la table "boatTrip":', err.message);
         } else {
-            console.log('Table "boat" créée ou déjà existante.');
+            console.log('Table "boatTrip" créée ou déjà existante.');
         }
     });
 }
@@ -124,6 +129,8 @@ const createReservationTable = () => {
             choosenDate TEXT,
             seatsBooked INTEGER,
             totalPrice REAL,
+            user_id INTEGER,
+            boatTrip_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES user(id)
             FOREIGN KEY (boatTrip_id) REFERENCES boatTrip(id)
         );
@@ -132,9 +139,9 @@ const createReservationTable = () => {
     // Exécuter la requête pour créer la table
     database.run(query, function(err) {
         if (err) {
-            console.error('Erreur lors de la création de la table "boat":', err.message);
+            console.error('Erreur lors de la création de la table "reservation":', err.message);
         } else {
-            console.log('Table "boat" créée ou déjà existante.');
+            console.log('Table "reservation" créée ou déjà existante.');
         }
     });
 }
@@ -152,6 +159,7 @@ const createBookPageTable = () => {
             fishingPlace TEXT,
             fishingDate TEXT,
             releasedFish BLOB,
+            user_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES user(id)
         );
     `;
@@ -159,19 +167,28 @@ const createBookPageTable = () => {
     // Exécuter la requête pour créer la table
     database.run(query, function(err) {
         if (err) {
-            console.error('Erreur lors de la création de la table "boat":', err.message);
+            console.error('Erreur lors de la création de la table "bookPage":', err.message);
         } else {
-            console.log('Table "boat" créée ou déjà existante.');
+            console.log('Table "bookPage" créée ou déjà existante.');
         }
     });
 }
 
-// Appeler les fonction pour créer les tables
-createUserTable();
-createBoatTable();
-createBoatTripTable();
-createReservationTable();
-createReservationTable();
+/**
+ * Execute la création des toutes les tables si elles n'existent pas déjà
+ *   createUserTable() : Table 'User'
+ *   createBoatTable() : Table 'Boat'
+ *   createBoatTripTable() : Table 'BoatTrip'
+ *   createReservationTable() : Table 'Reservation'
+ *   createBookPageTable() : Table 'BookPage'
+ */
+const createAllTables = () => {
+    createUserTable();
+    createBoatTable();
+    createBoatTripTable();
+    createReservationTable();
+    createBookPageTable();
+}
 
 // Exporter la connexion à la base de données pour utilisation ailleurs dans l'application
-module.exports = database;
+module.exports = { database, createAllTables };
