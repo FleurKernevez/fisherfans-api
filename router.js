@@ -34,12 +34,12 @@ const {
 } = require('./controllers/Reservation.js');
 
 const {
-    createBookPage, 
-    deleteBookPage, 
-    majDatasBookPage, 
-    majBookPage, 
-    bookPageDatas
-} = require('./controllers/BookPage.js');
+    createFishingBook,
+    deleteFishingBook,
+    updateFishingBook,
+    updateFishingBookById,
+    updateFishingBookById_1
+} = require('./controllers/FishingBook.js');
 
 /** Router du web service */
 const router = {
@@ -117,22 +117,22 @@ const router = {
 
         /** Table bookPage **/
         app.post('/fishingBook', (req, res) => {
-            createBookPage(req, res);
+            createFishingBook(req, res);
         }),
         app.put('/fishingBook/{id}/{User_id}', (req, res) => {
-            majBookPage(req, res);
+            updateFishingBookById(req, res);
         }),
         app.patch('/fishingBook/{id}/{User_id}', (req, res) => {
-            majDatasBookPage(req, res);
+            updateFishingBookById_1(req, res);
         }),
         app.put('/fishingBook/{id}', (req, res) => {
-            majBookPage(req, res);
+            updateFishingBook(req, res);
         }),
         app.delete('/fishingBook/{id}', (req, res) => {
-            deleteBookPage(req, res);
+            deleteFishingBook(req, res);
         }),
         app.patch('/fishingBook/{id}', (req, res) => {
-            majDatasBookPage(req, res);
+            majDatasFishingBook(req, res);
         }),
         
     ]
