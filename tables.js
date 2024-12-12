@@ -32,8 +32,6 @@ const createUserTable = () => {
             SIRETNumber TEXT,
             RCNumber TEXT,
             companyName TEXT,
-            RCNumber TEXT,
-            companyName TEXT,
             boatTrip_id INTEGER,
             reservation_id INTEGER,
             FOREIGN KEY (boatTrip_id) REFERENCES boatTrip(id),
