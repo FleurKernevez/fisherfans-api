@@ -43,6 +43,9 @@ const {
 } = require('./controllers/FishingBook.js');
 
 /** Définir les routes avec express.Router() **/
+
+/** Routes pour "user" **/
+// routes privées
 router.post('/user', (req, res) => { createUser(req, res); });
 router.get('/user/:id', (req, res) => { userDatas(req, res); });
 router.put('/user/:id', (req, res) => { majUser(req, res); });
@@ -64,6 +67,7 @@ router.delete('/boatTrip/:id', (req, res) => { deleteBoatTrip(req, res); });
 router.patch('/boatTrip/:id', (req, res) => { majDatasBoatTrip(req, res); });
 
 /** Routes pour "reservation" **/
+// routes privées
 router.get('/reservation', (req, res) => { reservationDatas(req, res); });
 router.post('/reservation', (req, res) => { createReservation(req, res); });
 router.put('/reservation/:id', (req, res) => { majReservation(req, res); });
@@ -71,6 +75,7 @@ router.delete('/reservation/:id', (req, res) => { deleteReservation(req, res); }
 router.patch('/reservation/:id', (req, res) => { majDatasReservation(req, res); });
 
 /** Routes pour "fishingBook" **/
+// routes privées
 router.post('/fishingBook', (req, res) => { createFishingBook(req, res); });
 router.put('/fishingBook/:id/:User_id', (req, res) => { updateFishingBookById(req, res); });
 router.patch('/fishingBook/:id/:User_id', (req, res) => { updateFishingBookById_1(req, res); });
