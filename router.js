@@ -53,7 +53,7 @@ router.delete('/user/:id', (req, res) => { deleteUser(req, res); });
 router.patch('/user/:id', (req, res) => { majDatasUser(req, res); });
 
 /** Routes pour "boat" **/
-router.get('/boat', (req, res) => { boatDatas(req, res); });
+router.get('/boats', (req, res) => { boatDatas(req, res); });
 router.post('/boat', (req, res) => { createBoat(req, res); });
 router.put('/boat/:id', (req, res) => { majBoat(req, res); });
 router.delete('/boat/:id', (req, res) => { deleteBoat(req, res); });
