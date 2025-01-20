@@ -117,88 +117,51 @@ module.exports.getBoatsBetweenLatitudeAndLongitude = function getBoatsBetweenLat
   });
 };
 
-/**
- * Fonction pour mettre à jour les données d'un bateau
- */
-module.exports.updateBoat = function updateBoat (
-  req, 
-  res, 
-  next, 
-  id, 
-  name, 
-  description, 
-  brand, 
-  productionYear, 
-  urlBoatPicture, 
-  licenseType, 
-  type, 
-  equipements, 
-  cautionAmount, 
-  capacityMax, 
-  bedsNumber, 
-  homePort, 
-  latitude, 
-  longitude, 
-  egineType, 
-  eginePower
-) {
-  Boat.updateBoat(
-    id, 
-    name, 
-    description, 
-    brand, 
-    productionYear, 
-    urlBoatPicture, 
-    licenseType, 
-    type, 
-    equipements, 
-    cautionAmount, 
-    capacityMax, 
-    bedsNumber, 
-    homePort, 
-    latitude, 
-    longitude, 
-    egineType, 
-    eginePower
-  )
-  .then(function (response) {
-    utils.writeJson(res, response);
-  })
-  .catch(function (response) {
-    utils.writeJson(res, response);
-  });
-};
+ // Fonction pour mettre à jour les données d'un bateau
 
-/**
- * Fonction pour mettre à jour les données d'un bateau 
- */
-module.exports.updateBoatById = function updateBoatById (
-  req, 
-  res, 
-  next, 
-  id, 
-  name, 
-  description, 
-  brand, 
-  productionYear, 
-  urlBoatPicture, 
-  licenseType, 
-  type, 
-  equipements, 
-  cautionAmount, 
-  capacityMax, 
-  bedsNumber, 
-  homePort, 
-  latitude, 
-  longitude, 
-  egineType, 
-  eginePower
-) {
-  Boat.updateBoatById(id, name, description, brand, productionYear, urlBoatPicture, licenseType, type, equipements, cautionAmount, capacityMax, bedsNumber, homePort, latitude, longitude, egineType, eginePower)
-  .then(function (response) {
-    utils.writeJson(res, response);
-  })
-  .catch(function (response) {
-    utils.writeJson(res, response);
-  });
+module.exports.majBoat = function updateBoat(req, res) {
+  const { id } = req.params; // Récupération de l'ID depuis les paramètres de l'URL
+  const updates = req.body; // Données de mise à jour depuis le corps de la requête
+
+  // Vérifier que l'ID est valide et que des données sont fournies
+  if (!id || isNaN(id)) {
+    return utils.writeJson(res, {
+      success: false,
+      message: "L'identifiant du bateau est requis et doit être un nombre valide.",
+    }, 400);
+  }
+
+  if (!updates || Object.keys(updates).length === 0) {
+    return utils.writeJson(res, {
+      success: false,
+      message: "Aucune donnée de mise à jour n'a été fournie.",
+    }, 400);
+  }
+
+  // Appel au service pour mettre à jour le bateau
+  Boat.updateBoat(id, updates)
+    .then((response) => {
+      if (response.affectedRows === 0) {
+        // Aucun bateau mis à jour (ID inexistant)
+        return utils.writeJson(res, {
+          success: false,
+          message: `Aucun bateau trouvé avec l'identifiant ${id}.`,
+        }, 404);
+      }
+
+      // Succès
+      utils.writeJson(res, {
+        success: true,
+        message: `Le bateau avec l'identifiant ${id} a été mis à jour avec succès.`,
+        affectedRows: response.affectedRows,
+      }, 200);
+    })
+    .catch((error) => {
+      console.error("Erreur lors de la mise à jour du bateau :", error);
+      utils.writeJson(res, {
+        success: false,
+        message: "Une erreur est survenue lors de la mise à jour du bateau.",
+        error: error.message || error,
+      }, 500);
+    });
 };

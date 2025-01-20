@@ -10,30 +10,7 @@ const database = new sqlite3.Database('./fisher-fans.db', (err) => {
   }
 });
 
-
-/**
- * Create
- * Create new boat
- *
- * boatLicenceNumber  
- * name   (optional)
- * description   (optional)
- * brand   (optional)
- * productionYear   (optional)
- * urlBoatPicture   (optional)
- * licenseType   (optional)
- * type   (optional)
- * equipements   (optional)
- * cautionAmount   (optional)
- * capacityMax   (optional)
- * bedsNumber   (optional)
- * homePort   (optional)
- * latitude   (optional)
- * longitude   (optional)
- * egineType   (optional)
- * eginePower   (optional)
- * no response value expected for this operation
- **/
+// Create a boat
 exports.createBoat = function(boatLicenceNumber,name,description,brand,productionYear,urlBoatPicture,licenseType,type,equipements,cautionAmount,capacityMax,bedsNumber,homePort,latitude,longitude,egineType,eginePower) {
   return new Promise(function(resolve, reject) {
     resolve();
@@ -85,63 +62,34 @@ exports.getBoatsBetweenLatitudeAndLongitude = function(latitude,longitude) {
   });
 }
 
-
-/**
- * Update
- * Update values for about boat
- *
- * id  
- * name   (optional)
- * description   (optional)
- * brand   (optional)
- * productionYear   (optional)
- * urlBoatPicture   (optional)
- * licenseType   (optional)
- * type   (optional)
- * equipements   (optional)
- * cautionAmount   (optional)
- * capacityMax   (optional)
- * bedsNumber   (optional)
- * homePort   (optional)
- * latitude   (optional)
- * longitude   (optional)
- * egineType   (optional)
- * eginePower   (optional)
- * no response value expected for this operation
- **/
-exports.updateBoat = function(id,name,description,brand,productionYear,urlBoatPicture,licenseType,type,equipements,cautionAmount,capacityMax,bedsNumber,homePort,latitude,longitude,egineType,eginePower) {
+// Update a boat 
+exports.updateBoat = function(id, updates) {
   return new Promise(function(resolve, reject) {
-    resolve();
+    // Vérifier si des champs à mettre à jour ont été fournis
+    if (!id || !updates || Object.keys(updates).length === 0) {
+      return reject(new Error("ID et données de mise à jour sont requis"));
+    }
+
+    // Construire dynamiquement la requête SQL et les paramètres
+    const fields = [];
+    const params = [];
+    for (const [key, value] of Object.entries(updates)) {
+      fields.push(`${key} = ?`);
+      params.push(value);
+    }
+    params.push(id); // Ajouter l'ID à la fin pour la clause WHERE
+
+    const sql = `
+      UPDATE boat
+      SET ${fields.join(', ')}
+      WHERE id = ?
+    `;
+
+    database.run(sql, params, function(error) {
+      if (error) {
+        return reject(error); // Rejeter la promesse en cas d'erreur
+      }
+      resolve({ affectedRows: this.changes }); // Résoudre avec le nombre de lignes affectées
+    });
   });
-}
-
-
-/**
- * Update
- * Update values for about boat
- *
- * id  
- * name   (optional)
- * description   (optional)
- * brand   (optional)
- * productionYear   (optional)
- * urlBoatPicture   (optional)
- * licenseType   (optional)
- * type   (optional)
- * equipements   (optional)
- * cautionAmount   (optional)
- * capacityMax   (optional)
- * bedsNumber   (optional)
- * homePort   (optional)
- * latitude   (optional)
- * longitude   (optional)
- * egineType   (optional)
- * eginePower   (optional)
- * no response value expected for this operation
- **/
-exports.updateBoatById = function(id,name,description,brand,productionYear,urlBoatPicture,licenseType,type,equipements,cautionAmount,capacityMax,bedsNumber,homePort,latitude,longitude,egineType,eginePower) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
-
+};
