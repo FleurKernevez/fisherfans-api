@@ -98,25 +98,6 @@ module.exports.deleteBoat = (req, res, next) => {
     });
 };
 
-/**
- * Fonction qui tient compte de la latitude et de la longitude pour obtenir les bateaux
- */
-module.exports.getBoatsBetweenLatitudeAndLongitude = function getBoatsBetweenLatitudeAndLongitude (
-  req, 
-  res, 
-  next, 
-  latitude, 
-  longitude
-) {
-  Boat.getBoatsBetweenLatitudeAndLongitude(latitude, longitude)
-  .then(function (response) {
-    utils.writeJson(res, response);
-  })
-  .catch(function (response) {
-    utils.writeJson(res, response);
-  });
-};
-
  // Fonction pour mettre à jour les données d'un bateau
 
 module.exports.majBoat = function updateBoat(req, res) {
@@ -161,6 +142,44 @@ module.exports.majBoat = function updateBoat(req, res) {
       utils.writeJson(res, {
         success: false,
         message: "Une erreur est survenue lors de la mise à jour du bateau.",
+        error: error.message || error,
+      }, 500);
+    });
+};
+
+module.exports.getBoatsInBoundingBox = function(req, res) {
+  const { minLatitude, maxLatitude, minLongitude, maxLongitude } = req.query;
+
+  // Vérifier que toutes les coordonnées sont fournies
+  if (
+    minLatitude === undefined || maxLatitude === undefined ||
+    minLongitude === undefined || maxLongitude === undefined
+  ) {
+    return utils.writeJson(res, {
+      success: false,
+      message: "Les paramètres minLatitude, maxLatitude, minLongitude et maxLongitude sont requis.",
+    }, 400);
+  }
+
+  // Appel au service pour récupérer les bateaux
+  Boat.getBoatsInBoundingBox(
+    parseFloat(minLatitude),
+    parseFloat(maxLatitude),
+    parseFloat(minLongitude),
+    parseFloat(maxLongitude)
+  )
+    .then((boats) => {
+      utils.writeJson(res, {
+        success: true,
+        message: "Liste des bateaux récupérée avec succès.",
+        data: boats,
+      }, 200);
+    })
+    .catch((error) => {
+      console.error("Erreur lors de la récupération des bateaux :", error);
+      utils.writeJson(res, {
+        success: false,
+        message: "Une erreur est survenue lors de la récupération des bateaux.",
         error: error.message || error,
       }, 500);
     });

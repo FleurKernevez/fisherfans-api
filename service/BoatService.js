@@ -17,8 +17,6 @@ exports.createBoat = function(boatLicenceNumber,name,description,brand,productio
   });
 }
 
-
-
 //Delete a boat
 exports.deleteBoat = function(id) {
   return new Promise(function(resolve, reject) {
@@ -32,35 +30,6 @@ exports.deleteBoat = function(id) {
   });
 };
 
-
-/**
- * Get
- * Get a Boat
- *
- * latitude   (optional)
- * longitude   (optional)
- * no response value expected for this operation
- **/
-exports.getBoat = function(latitude,longitude) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
-
-
-/**
- * Get
- * Get boats inside latitude and longitude
- *
- * latitude  
- * longitude  
- * no response value expected for this operation
- **/
-exports.getBoatsBetweenLatitudeAndLongitude = function(latitude,longitude) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
 
 // Update a boat 
 exports.updateBoat = function(id, updates) {
@@ -90,6 +59,35 @@ exports.updateBoat = function(id, updates) {
         return reject(error); // Rejeter la promesse en cas d'erreur
       }
       resolve({ affectedRows: this.changes }); // Résoudre avec le nombre de lignes affectées
+    });
+  });
+};
+
+// find a boat in function of the place
+exports.getBoatsInBoundingBox = function(minLatitude, maxLatitude, minLongitude, maxLongitude) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT *
+      FROM boat
+      WHERE
+        latitude1 BETWEEN ? AND ? AND
+        longitude1 BETWEEN ? AND ? AND
+        latitude2 BETWEEN ? AND ? AND
+        longitude2 BETWEEN ? AND ?
+    `;
+
+    const params = [
+      minLatitude, maxLatitude,
+      minLongitude, maxLongitude,
+      minLatitude, maxLatitude,
+      minLongitude, maxLongitude,
+    ];
+
+    database.all(sql, params, (error, rows) => {
+      if (error) {
+        return reject(error); // Rejeter en cas d'erreur
+      }
+      resolve(rows); // Résoudre avec les bateaux trouvés
     });
   });
 };

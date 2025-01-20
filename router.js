@@ -13,9 +13,9 @@ const {
 const {
     createBoat, 
     deleteBoat, 
-    majDatasBoat, 
     majBoat, 
-    boatDatas
+    boatDatas,
+    getBoatsInBoundingBox
 } = require('./controllers/Boat.js');
 
 const {
@@ -57,7 +57,7 @@ router.get('/boats', (req, res) => { boatDatas(req, res); });
 router.post('/boat', (req, res) => { createBoat(req, res); });
 router.put('/boat/:id', (req, res) => { majBoat(req, res); });
 router.delete('/boat/:id', (req, res) => { deleteBoat(req, res); });
-router.patch('/boat/:id', (req, res) => { majDatasBoat(req, res); });
+router.get('/boats/in-bbox', (req, res) => { getBoatsInBoundingBox(req, res); });
 
 /** Routes pour "boatTrip" **/
 router.get('/boatTrip', (req, res) => { boatTripDatas(req, res); });
