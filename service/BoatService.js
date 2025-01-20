@@ -1,5 +1,15 @@
 'use strict';
 
+const sqlite3 = require('sqlite3').verbose();
+
+const database = new sqlite3.Database('./fisher-fans.db', (err) => {
+  if (err) {
+      console.error('Erreur lors de la connexion à la base de données :', err.message);
+  } else {
+      console.log('Connexion réussie à la base de données SQLite.');
+  }
+});
+
 
 /**
  * Create
@@ -31,18 +41,19 @@ exports.createBoat = function(boatLicenceNumber,name,description,brand,productio
 }
 
 
-/**
- * Delete
- * Delete a boat
- *
- * id  
- * no response value expected for this operation
- **/
+
+//Delete a boat
 exports.deleteBoat = function(id) {
   return new Promise(function(resolve, reject) {
-    resolve();
+    const sql = 'DELETE FROM boat WHERE id = ?'; // Requête SQL pour supprimer un bateau
+    database.run(sql, [id], function(error) {
+      if (error) {
+        return reject(error); // Rejeter la promesse en cas d'erreur
+      }
+      resolve({ affectedRows: this.changes }); // Résoudre avec le nombre de lignes affectées
+    });
   });
-}
+};
 
 
 /**

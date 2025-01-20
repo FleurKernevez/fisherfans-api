@@ -14,6 +14,7 @@ const database = new sqlite3.Database('./fisher-fans.db', (err) => {
   }
 });
 
+// Fonction pour récupérer la liste des bateaux
 module.exports.boatDatas = function boatDatas(req, res) {
   const query = 'SELECT * FROM boat'; // Requête SQL pour récupérer les données
 
@@ -28,10 +29,7 @@ module.exports.boatDatas = function boatDatas(req, res) {
   });
 };
 
-/**
- * Fonction pour créer un bateau
- */
-
+// Fonction pour créer un bateau
 module.exports.createBoat = function createBoat(req, res) {
   const { name, description, brand, productionYear, urlBoatPicture, licenceType, type, equipment, cautionAmount, capacityMax, bedsNumber, homePort, latitude1, longitude1, latitude2, longitude2, engineType, enginePower, user_id } = req.body;
 
@@ -59,31 +57,46 @@ module.exports.createBoat = function createBoat(req, res) {
   });
 }
 
- // Fonction pour supprimer un bateau
-
- module.exports.deleteBoat = (req, res, next) => {
+// Fonction pour supprimer un bateau
+module.exports.deleteBoat = (req, res, next) => {
   const { id } = req.params; // Récupération de l'ID depuis les paramètres de la requête
-  
+
+  // Vérification si l'ID est fourni et valide
+  if (!id || isNaN(id)) {
+    return res.status(400).json({
+      success: false,
+      message: "L'identifiant du bateau est requis et doit être un nombre valide.",
+    });
+  }
+
+  // Appel à la méthode de suppression du bateau
   Boat.deleteBoat(id)
     .then(response => {
-      // Réponse réussie : renvoyer la réponse dans le format JSON
-      utils.writeJson(res, response);
+      if (!response || response.affectedRows === 0) {
+        // Vérification si aucun bateau n'a été supprimé
+        return res.status(404).json({
+          success: false,
+          message: `Aucun bateau trouvé avec l'identifiant ${id}.`,
+        });
+      }
+
+      // Réponse réussie : renvoyer un message de confirmation
+      res.status(200).json({
+        success: true,
+        message: `Le bateau avec l'identifiant ${id} a été supprimé avec succès.`,
+        data: response,
+      });
     })
     .catch(error => {
-      // En cas d'erreur : renvoyer l'erreur dans le format JSON
-      utils.writeJson(res, error);
+      console.error("Erreur lors de la suppression du bateau :", error);
+      // Réponse en cas d'erreur serveur
+      res.status(500).json({
+        success: false,
+        message: "Une erreur est survenue lors de la suppression du bateau.",
+        error: error.message || error,
+      });
     });
 };
-
-// module.exports.deleteBoat = function deleteBoat (req, res, next, id) {
-//   Boat.deleteBoat(id)
-//     .then(function (response) {
-//       utils.writeJson(res, response);
-//     })
-//     .catch(function (response) {
-//       utils.writeJson(res, response);
-//     });
-// };
 
 /**
  * Fonction qui tient compte de la latitude et de la longitude pour obtenir les bateaux
