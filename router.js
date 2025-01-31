@@ -21,9 +21,9 @@ const {
 const {
     createBoatTrip, 
     deleteBoatTrip, 
-    majDatasBoatTrip, 
-    majBoatTrip, 
-    boatTripDatas
+    updateBoatTrip, 
+    updateBoatTrip_1,
+    getBoatTrip
 } = require('./controllers/BoatTrip.js');
 
 const {
@@ -60,11 +60,21 @@ router.delete('/boat/:id', (req, res) => { deleteBoat(req, res); });
 router.patch('/boat/:id', (req, res) => { majDatasBoat(req, res); });
 
 /** Routes pour "boatTrip" **/
-router.get('/boatTrip', (req, res) => { boatTripDatas(req, res); });
-router.post('/boatTrip', (req, res) => { createBoatTrip(req, res); });
-router.put('/boatTrip/:id', (req, res) => { majBoatTrip(req, res); });
-router.delete('/boatTrip/:id', (req, res) => { deleteBoatTrip(req, res); });
-router.patch('/boatTrip/:id', (req, res) => { majDatasBoatTrip(req, res); });
+router.get('/boatTrip/:id', (req, res, next) => { // Fait
+    getBoatTrip(req, res, next, parseInt(req.params.id)); 
+});
+router.post('/boatTrip', (req, res) => { // Fait
+    createBoatTrip(req, res);
+});
+router.put('/boatTrip/:id', (req, res, next) => { // Fait
+    updateBoatTrip(req, res, next, parseInt(req.params.id)); 
+});
+router.delete('/boatTrip/:id', (req, res, next) => { // Fait
+    deleteBoatTrip(req, res, next, parseInt(req.params.id)); 
+});
+router.patch('/boatTrip/:id', (req, res, next) => { // Fait
+    updateBoatTrip_1(req, res, next, parseInt(req.params.id)); 
+});
 
 /** Routes pour "reservation" **/
 // routes privées
