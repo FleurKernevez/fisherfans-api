@@ -11,11 +11,12 @@ const {
 } = require('./controllers/User.js');
 
 const {
+    getFilteredBoats,
     createBoat, 
     deleteBoat, 
-    majDatasBoat, 
     majBoat, 
-    boatDatas
+    boatDatas,
+    getBoatsInBoundingBox
 } = require('./controllers/Boat.js');
 
 const {
@@ -53,11 +54,12 @@ router.delete('/user/:id', (req, res) => { deleteUser(req, res); });
 router.patch('/user/:id', (req, res) => { majDatasUser(req, res); });
 
 /** Routes pour "boat" **/
-router.get('/boat', (req, res) => { boatDatas(req, res); });
+router.get('/boats', (req, res) => { boatDatas(req, res); });
+router.get('/boatsFiltered', (req, res) => { getFilteredBoats(req, res); });
 router.post('/boat', (req, res) => { createBoat(req, res); });
 router.put('/boat/:id', (req, res) => { majBoat(req, res); });
 router.delete('/boat/:id', (req, res) => { deleteBoat(req, res); });
-router.patch('/boat/:id', (req, res) => { majDatasBoat(req, res); });
+router.get('/boats/in-bbox', (req, res) => { getBoatsInBoundingBox(req, res); });
 
 /** Routes pour "boatTrip" **/
 router.get('/boatTrip/:id', (req, res, next) => { // Fait
