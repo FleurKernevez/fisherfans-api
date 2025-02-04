@@ -10,6 +10,32 @@ const database = new sqlite3.Database('./fisher-fans.db', (err) => {
   }
 });
 
+// Get a boat with some caracteristics
+exports.getFilteredBoats = function(filters) {
+  return new Promise((resolve, reject) => {
+    let sql = "SELECT * FROM boat WHERE 1=1";
+    const params = [];
+
+    // Ajouter dynamiquement des conditions pour chaque filtre
+    for (const [key, value] of Object.entries(filters)) {
+      if (Array.isArray(value)) {
+        sql += ` AND ${key} IN (${value.map(() => '?').join(', ')})`;
+        params.push(...value);
+      } else {
+        sql += ` AND ${key} = ?`;
+        params.push(value);
+      }
+    }
+
+    database.all(sql, params, (error, rows) => {
+      if (error) {
+        return reject(error); 
+      }
+      resolve(rows);
+    });
+  });
+};
+
 // Create a boat
 exports.createBoat = function(boatLicenceNumber,name,description,brand,productionYear,urlBoatPicture,licenseType,type,equipements,cautionAmount,capacityMax,bedsNumber,homePort,latitude,longitude,egineType,eginePower) {
   return new Promise(function(resolve, reject) {

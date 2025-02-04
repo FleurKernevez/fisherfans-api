@@ -29,6 +29,21 @@ module.exports.boatDatas = function boatDatas(req, res) {
   });
 };
 
+// Fonction pour récupérer la liste des bateaux filtrés selon leurs caractéristiques
+module.exports.getFilteredBoats = function(req, res) {
+  const filters = req.query;
+  console.log('filters', filters);
+
+  Boat.getFilteredBoats(filters)
+    .then(boats => {
+      res.json(boats);
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      res.status(500).json({ error: error.message });  // Gérer les erreurs
+    });
+};
+
 // Fonction pour créer un bateau
 module.exports.createBoat = function createBoat(req, res) {
   const { name, description, brand, productionYear, urlBoatPicture, licenceType, type, equipment, cautionAmount, capacityMax, bedsNumber, homePort, latitude1, longitude1, latitude2, longitude2, engineType, enginePower, user_id } = req.body;
@@ -99,7 +114,6 @@ module.exports.deleteBoat = (req, res, next) => {
 };
 
  // Fonction pour mettre à jour les données d'un bateau
-
 module.exports.majBoat = function updateBoat(req, res) {
   const { id } = req.params; // Récupération de l'ID depuis les paramètres de l'URL
   const updates = req.body; // Données de mise à jour depuis le corps de la requête

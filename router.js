@@ -11,6 +11,7 @@ const {
 } = require('./controllers/User.js');
 
 const {
+    getFilteredBoats,
     createBoat, 
     deleteBoat, 
     majBoat, 
@@ -54,6 +55,7 @@ router.patch('/user/:id', (req, res) => { majDatasUser(req, res); });
 
 /** Routes pour "boat" **/
 router.get('/boats', (req, res) => { boatDatas(req, res); });
+router.get('/boatsFiltered', (req, res) => { getFilteredBoats(req, res); });
 router.post('/boat', (req, res) => { createBoat(req, res); });
 router.put('/boat/:id', (req, res) => { majBoat(req, res); });
 router.delete('/boat/:id', (req, res) => { deleteBoat(req, res); });
