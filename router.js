@@ -4,10 +4,11 @@ const router = express.Router();  // Utilisez express.Router() pour créer un ro
 /* Importation de controllers pour les associer aux routes du router */
 const {
     createUser, 
+    getUserById,
+    getAllUsers,      
+    getAllUsersByFilter,
     deleteUser, 
-    majDatasUser, 
     majUser, 
-    userDatas
 } = require('./controllers/User.js');
 
 const {
@@ -48,10 +49,11 @@ const {
 /** Routes pour "user" **/
 // routes privées
 router.post('/user', (req, res) => { createUser(req, res); });
-router.get('/user/:id', (req, res) => { userDatas(req, res); });
-router.put('/user/:id', (req, res) => { majUser(req, res); });
+router.get('/user/:id', (req, res) => { getUserById(req, res); });
+router.get('/users', (req, res) => { getAllUsers(req, res); });
+router.get('/usersFiltered', (req, res) => { getAllUsersByFilter(req, res); });
 router.delete('/user/:id', (req, res) => { deleteUser(req, res); });
-router.patch('/user/:id', (req, res) => { majDatasUser(req, res); });
+router.put('/user/:id', (req, res) => { majUser(req, res); });
 
 /** Routes pour "boat" **/
 router.get('/boats', (req, res) => { boatDatas(req, res); });
