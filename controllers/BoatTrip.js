@@ -3,7 +3,6 @@
 const sqlite3 = require('sqlite3').verbose();
 var utils = require('../utils/writer.js');
 
-// Connexion à la base de données SQLite (Singleton)
 let database;
 function getDatabase() {
     if (!database) {
@@ -31,8 +30,8 @@ module.exports.createBoatTrip = function createBoatTrip (
 
   const db = getDatabase();
 
-  // 1. Vérifier si l'utilisateur a un permis
-  const checkUserQuery = 'SELECT boatLicenceNumber FROM user WHERE id = ?'; // Assurez-vous que 'permis' est le nom correct de la colonne
+  // Vérifier si l'utilisateur a un permis
+  const checkUserQuery = 'SELECT boatLicenceNumber FROM user WHERE id = ?';
   db.get(checkUserQuery, [req.body.user_id], (checkUserErr, userRow) => {
     if (checkUserErr) {
         console.error("Erreur lors de la vérification du permis utilisateur :", checkUserErr);
@@ -43,11 +42,11 @@ module.exports.createBoatTrip = function createBoatTrip (
           return utils.writeJson(res, { message: "Utilisateur non trouvé" }, 404);
       }
 
-      if (!userRow.boatLicenceNumber) { // Vérifie si la valeur de 'permis' est fausse (0, null, undefined, false, "", NaN)
+      if (!userRow.boatLicenceNumber) { 
           return utils.writeJson(res, { message: "L'utilisateur ne possède pas de permis pour créer un voyage en bateau." }, 403); // 403 Forbidden
       }
 
-      // 2. Si l'utilisateur a un permis, créer le voyage
+      // Si l'utilisateur a un permis, créer le voyage
       const insertBoatTripQuery = `
           INSERT INTO boatTrip (title, practicalInformation, type, priceType, startDate, endDate, passengersNumber, price, user_id, boat_id, reservation_id)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -133,22 +132,82 @@ module.exports.getBoatTrip = function getBoatTrip(req, res, next, id) {
             return utils.writeJson(res, { message: "Voyage non trouvé" }, 404);
         }
 
-        // Suppression si l'ID existe
         db.run(query, [id], function(err) {
             if (err) {
-                console.error("Erreur lors de la suppression du voyage en bateau :", err);
+                console.error("Erreur lors de la récupération du voyage en bateau :", err);
                 return utils.writeJson(res, { message: "Erreur interne" }, 500);
             }
             if (this.changes === 0) {
                 return utils.writeJson(res, { message: "Voyage non trouvé" }, 404);
             }
         
-            utils.writeJson(res, { message: "Voyage supprimé avec succès" }, 200);
+            utils.writeJson(res, { message: "Voyage récupéré avec succès" }, 200);
         });
         utils.writeJson(res, row, 200);
     });
 };
 
+/**
+ * BF22 L’API FF devra renvoyer une liste de sorties en filtrant sur un sous- ensemble quelconque des caractéristiques d’une sortie 
+ * getBoatTripByParams
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ * @returns 
+ */
+module.exports.getBoatTripByParams = function getBoatTripByParams(req, res, next) {
+    const db = getDatabase();
+
+    const {
+        user_id, 
+        boat_id, 
+        title, 
+        practicalInformation, 
+        type, 
+        priceType, 
+        startDate, 
+        endDate, 
+        passengersNumber, 
+        price, 
+        reservation_id
+    } = req.body;
+
+    let query = 'SELECT * FROM boatTrip WHERE 1=1';
+    const params = [];
+
+    const filters = {
+        user_id,
+        boat_id,
+        title,
+        practicalInformation,
+        type,
+        priceType,
+        startDate,
+        endDate,
+        passengersNumber,
+        price,
+        reservation_id
+    };
+
+    for (const [key, value] of Object.entries(filters)) {
+        if (value !== undefined) {
+            query += ` AND ${key} = ?`;
+            params.push(value);
+        }
+    }
+
+    db.all(query, params, (err, rows) => {
+        if (err) {
+            console.error("Erreur lors de la récupération des voyages :", err);
+            return next(err);
+        }
+        if (rows.length === 0) {
+            return utils.writeJson(res, { message: "Aucun voyage trouvé avec les paramètres fournis" }, 404);
+        }
+        console.log("Voyages récupérés avec succès :", rows);
+        utils.writeJson(res, rows, 200);
+    });
+}
 
 /**
  * Fonction pour mettre à jour les données d'un voyage en bateau 
@@ -276,8 +335,7 @@ module.exports.updateBoatTrip = function updateBoatTrip(req, res, next, id) {
                         console.error("Erreur lors de la récupération des données mises à jour :", err);
                         return next(err);
                     }
-                    return utils.writeJson(res, updatedData, 200);
-                    // return utils.writeJson(res, updatedRow, 200);
+                    return utils.writeJson(res, updatedRow, 200);
                 });
             });
         });
