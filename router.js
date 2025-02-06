@@ -25,7 +25,8 @@ const {
     deleteBoatTrip, 
     updateBoatTrip, 
     updateBoatTrip_1,
-    getBoatTrip
+    getBoatTrip,
+    getBoatTripByParams
 } = require('./controllers/BoatTrip.js');
 
 const {
@@ -64,19 +65,25 @@ router.delete('/boat/:id', (req, res) => { deleteBoat(req, res); });
 router.get('/boats/in-bbox', (req, res) => { getBoatsInBoundingBox(req, res); });
 
 /** Routes pour "boatTrip" **/
-router.get('/boatTrip/:id', (req, res, next) => { // Fait
+router.get('/boatTrip/:id', (req, res, next) => {
     getBoatTrip(req, res, next, parseInt(req.params.id)); 
 });
-router.post('/boatTrip', (req, res) => { // Fait
+
+// BF22 
+// L’API FF devra renvoyer une liste de sorties en filtrant sur un sous- ensemble quelconque des caractéristiques d’une sortie 
+router.get('/boatTrip', (req, res) => {
+    getBoatTripByParams(req, res); 
+});
+router.post('/boatTrip', (req, res) => {
     createBoatTrip(req, res);
 });
-router.put('/boatTrip/:id', (req, res, next) => { // Fait
+router.put('/boatTrip/:id', (req, res, next) => {
     updateBoatTrip(req, res, next, parseInt(req.params.id)); 
 });
-router.delete('/boatTrip/:id', (req, res, next) => { // Fait
+router.delete('/boatTrip/:id', (req, res, next) => {
     deleteBoatTrip(req, res, next, parseInt(req.params.id)); 
 });
-router.patch('/boatTrip/:id', (req, res, next) => { // Fait
+router.patch('/boatTrip/:id', (req, res, next) => {
     updateBoatTrip_1(req, res, next, parseInt(req.params.id)); 
 });
 
