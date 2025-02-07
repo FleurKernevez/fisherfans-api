@@ -72,6 +72,61 @@ module.exports.createBoat = function createBoat(req, res) {
   });
 }
 
+// Fonction pour créer un bateau si l'utilisateur a une licence
+module.exports.createBoatIfLicence = function createBoatIfLicence(req, res) {
+
+  const { 
+    name, description, brand, productionYear, urlBoatPicture, licenceType, 
+    type, equipment, cautionAmount, capacityMax, bedsNumber, homePort, 
+    latitude1, longitude1, latitude2, longitude2, engineType, enginePower, user_id 
+  } = req.body;
+
+  // Vérification que tous les champs requis sont fournis
+  if (!name || !brand || !productionYear || !licenceType || !type || !cautionAmount || 
+      !capacityMax || !bedsNumber || !homePort || !latitude1 || !longitude1 || 
+      !latitude2 || !longitude2 || !engineType || !enginePower || !user_id) {
+    return res.status(400).json({ error: 'Tous les champs sont requis.' });
+  }
+
+  // Vérification si l'utilisateur possède un numéro de licence
+  const checkUserQuery = `SELECT boatLicenceNumber FROM user WHERE id = ?`;
+
+  database.get(checkUserQuery, [user_id], (err, row) => {
+    if (err) {
+      console.error('Erreur lors de la vérification du numéro de licence :', err.message);
+      return res.status(500).json({ error: 'Erreur interne du serveur.' });
+    }
+
+    if (!row || !row.boatLicenceNumber) {
+      return res.status(403).json({ error: "L'utilisateur n'a pas de numéro de licence." });
+    }
+
+    // L'utilisateur a un numéro de licence, on peut créer le bateau
+    const insertQuery = `
+      INSERT INTO boat (name, description, brand, productionYear, urlBoatPicture, licenceType, 
+                        type, equipment, cautionAmount, capacityMax, bedsNumber, homePort, 
+                        latitude1, longitude1, latitude2, longitude2, engineType, enginePower, user_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    `;
+
+    const values = [
+      name, description, brand, productionYear, urlBoatPicture, licenceType, 
+      type, equipment, cautionAmount, capacityMax, bedsNumber, homePort, 
+      latitude1, longitude1, latitude2, longitude2, engineType, enginePower, user_id
+    ];
+
+    database.run(insertQuery, values, function(err) {
+      if (err) {
+        console.error('Erreur lors de la création du bateau :', err.message);
+        return res.status(500).json({ error: 'Erreur interne du serveur.' });
+      }
+      
+      console.log('Bateau créé avec succès.');
+      res.status(201).json({ id: this.lastID, message: 'Bateau créé avec succès.' });
+    });
+  });
+}
+
 // Fonction pour supprimer un bateau
 module.exports.deleteBoat = (req, res, next) => {
   const { id } = req.params; // Récupération de l'ID depuis les paramètres de la requête

@@ -14,6 +14,7 @@ const {
 const {
     getFilteredBoats,
     createBoat, 
+    createBoatIfLicence,
     deleteBoat, 
     majBoat, 
     boatDatas,
@@ -60,6 +61,7 @@ router.put('/user/:id', (req, res) => { majUser(req, res); });
 router.get('/boats', (req, res) => { boatDatas(req, res); });
 router.get('/boatsFiltered', (req, res) => { getFilteredBoats(req, res); });
 router.post('/boat', (req, res) => { createBoat(req, res); });
+router.post('/boatIfLicence', (req, res) => { createBoatIfLicence(req, res); });
 router.put('/boat/:id', (req, res) => { majBoat(req, res); });
 router.delete('/boat/:id', (req, res) => { deleteBoat(req, res); });
 router.get('/boats/in-bbox', (req, res) => { getBoatsInBoundingBox(req, res); });
