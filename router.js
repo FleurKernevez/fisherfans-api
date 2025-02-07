@@ -34,7 +34,7 @@ const {
     deleteReservation, 
     majDatasReservation, 
     majReservation, 
-    reservationDatas
+    getReservations
 } = require('./controllers/Reservation.js');
 
 const {
@@ -89,11 +89,12 @@ router.patch('/boatTrip/:id', (req, res, next) => {
 
 /** Routes pour "reservation" **/
 // routes privées
-router.get('/reservation', (req, res) => { reservationDatas(req, res); });
+router.get('/reservations', (req, res) => { getReservations(req, res); });
 router.post('/reservation', (req, res) => { createReservation(req, res); });
 router.put('/reservation/:id', (req, res) => { majReservation(req, res); });
 router.delete('/reservation/:id', (req, res) => { deleteReservation(req, res); });
 router.patch('/reservation/:id', (req, res) => { majDatasReservation(req, res); });
+
 
 /** Routes pour "fishingBook" **/
 // routes privées
