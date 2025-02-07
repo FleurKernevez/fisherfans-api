@@ -132,17 +132,6 @@ module.exports.getBoatTrip = function getBoatTrip(req, res, next, id) {
             return utils.writeJson(res, { message: "Voyage non trouvé" }, 404);
         }
 
-        db.run(query, [id], function(err) {
-            if (err) {
-                console.error("Erreur lors de la récupération du voyage en bateau :", err);
-                return utils.writeJson(res, { message: "Erreur interne" }, 500);
-            }
-            if (this.changes === 0) {
-                return utils.writeJson(res, { message: "Voyage non trouvé" }, 404);
-            }
-        
-            utils.writeJson(res, { message: "Voyage récupéré avec succès" }, 200);
-        });
         utils.writeJson(res, row, 200);
     });
 };
