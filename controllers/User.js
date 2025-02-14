@@ -128,20 +128,21 @@ module.exports.getAllUsersByFilter = function getAllUsersByFilter(req, res) {
 };
 
 
+
 /**
- * Supprimer un utilisateur
+ * Supprimer un utilisateur (récupère l'ID via le token)
  */
 module.exports.deleteUser = function deleteUser(req, res) {
-  const { id } = req.params; //Récupération de l'ID de l'utilisateur depuis l'URL
+  const userId = req.user.id; // Récupération de l'ID utilisateur depuis le token
 
-  if (!id) {
-    return res.status(400).json({ error: "L'ID de l'utilisateur est requis." });
+  if (!userId) {
+    return res.status(400).json({ error: "ID utilisateur introuvable dans le token." });
   }
 
-  User.deleteUser(id)
+  User.deleteUser(userId)
     .then(response => {
       if (response.affectedRows === 0) {
-        return res.status(404).json({ error: "Utilisateur non trouvé." });
+        return res.status(404).json({ error: "Utilisateur non trouvé ou déjà supprimé." });
       }
       res.status(200).json({ message: "Utilisateur supprimé avec succès." });
     })
@@ -156,7 +157,7 @@ module.exports.deleteUser = function deleteUser(req, res) {
 /**
  * Mettre à jour les informations d'un utilisateur
  */
-exports.majUser = function majUser(req, res) {
+module.exports.majUser = function majUser(req, res) {
   const userId = req.user.id; // Récupération de l'ID utilisateur depuis le token
   const updatedData = req.body; // Récupération des nouvelles données depuis le body
 
@@ -164,51 +165,32 @@ exports.majUser = function majUser(req, res) {
     return res.status(400).json({ error: "ID utilisateur introuvable dans le token." });
   }
 
-  const allowedFields = [
-      "lastname", "firstname", "birthdate", "phoneNumber", "address", "postalCode", "city",
-      "languagesSpoken", "urlUserPicture", "boatLicenceNumber", "insuranceNumber", "status",
-      "companyName", "activityType", "SIRETNumber", "RCNumber"
-  ];
-
-  const updates = [];
-  const values = [];
-
-  Object.keys(updatedData).forEach(key => {
-    if (allowedFields.includes(key) && updatedData[key]) {
-      updates.push(`${key} = ?`);
-      values.push(updatedData[key]);
-    }
-  });
-
-  if (updates.length === 0) {
-    return res.status(400).json({ error: "Aucune donnée valide à mettre à jour." });
-  }
-
-  values.push(userId); // Ajout de l'ID pour la clause WHERE
-  const query = `UPDATE user SET ${updates.join(", ")} WHERE id = ?`;
-
-  database.run(query, values, function (err) {
-    if (err) {
-      console.error("Erreur lors de la mise à jour de l'utilisateur :", err.message);
-      return res.status(500).json({ error: "Erreur interne du serveur." });
-    }
-    res.status(200).json({ message: "Utilisateur mis à jour avec succès." });
-  });
+  User.majUser(userId, updatedData)
+    .then(response => {
+      if (response.affectedRows === 0) {
+        return res.status(404).json({ error: "Utilisateur non trouvé ou aucune donnée mise à jour." });
+      }
+      res.status(200).json({ message: "Utilisateur mis à jour avec succès." });
+    })
+    .catch(error => {
+      console.error("Erreur lors de la mise à jour de l'utilisateur :", error.message);
+      res.status(500).json({ error: "Erreur interne du serveur." });
+    });
 };
 
 
 
 /**
- * Récupérer toutes les réservations d'un utilisateur
+ * Récupérer toutes les réservations de l'utilisateur connecté
  */
 module.exports.getUserReservations = function getUserReservations(req, res) {
-  const user_id = req.params.id; // Récupérer l'ID de l'utilisateur depuis l'URL
+  const userId = req.user.id; // Récupération de l'ID utilisateur depuis le token
 
-  if (!user_id) {
-    return res.status(400).json({ error: "L'ID de l'utilisateur est requis." });
+  if (!userId) {
+    return res.status(400).json({ error: "ID utilisateur introuvable dans le token." });
   }
 
-  Reservation.getUserReservations(user_id)
+  User.getUserReservations(userId)
     .then(reservations => {
       res.status(200).json(reservations);
     })
@@ -217,6 +199,7 @@ module.exports.getUserReservations = function getUserReservations(req, res) {
       res.status(500).json({ error: "Erreur interne du serveur." });
     });
 };
+
 
 
 

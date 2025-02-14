@@ -37,15 +37,14 @@ const {
     majReservation, 
 } = require('./controllers/Reservation.js');
 
-/*const {
+const {
     createFishingBook,
     deleteFishingBook,
     updateFishingBook,
     updateFishingBookById,
     updateFishingBookById_1
-} = require('./controllers/FishingBook.js');*/
+} = require('./controllers/FishingBook.js');
 
-/** Définir les routes avec express.Router() **/
 
 /** Routes pour "user" **/
 // routes privées
@@ -54,9 +53,10 @@ router.post('/login', (req, res) => { login(req, res); });
 router.get('/user/infos', authenticateUser, (req, res) => { getUserById(req, res); }); 
 router.get('/users', (req, res) => { getAllUsers(req, res); });
 router.get('/usersFiltered', (req, res) => { getAllUsersByFilter(req, res); });
-router.delete('/user/:id', authenticateUser, (req, res) => { deleteUser(req, res); });
+router.delete('/user', authenticateUser, (req, res) => { deleteUser(req, res); });
 router.put('/user', authenticateUser, (req, res) => { majUser(req, res); }); 
-router.get('/reservations/user/:id', authenticateUser, (req, res) => { getUserReservations(req, res); });
+router.get('/user/reservations', authenticateUser, (req, res) => { getUserReservations(req, res); });
+
 
 /** Routes pour "boat" **/
 router.get('/boats', (req, res) => { boatDatas(req, res); });
@@ -84,7 +84,6 @@ router.get('/reservations', authenticateUser, (req, res) => { reservationDatas(r
 router.delete('/reservation/:id', authenticateUser, (req, res) => { deleteReservation(req, res); });
 router.put('/reservation/:id', authenticateUser, (req, res) => { majReservation(req, res); });
 
-// Tester toutes les routes user et resa
 
 
 /** Routes pour "fishingBook" **/

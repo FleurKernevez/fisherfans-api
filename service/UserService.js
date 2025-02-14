@@ -167,15 +167,16 @@ exports.getAllUsersByFilter = function (filters) {
 };
 
 
+
 /**
- * Supprimer un utilisateur
+ * Supprimer un utilisateur (soft delete : anonymisation des données)
  */
-exports.deleteUser = function (id) {
+exports.deleteUser = function (userId) {
   return new Promise((resolve, reject) => {
     // Vérifier si l'utilisateur a des réservations actives
     const checkReservationsQuery = `SELECT COUNT(*) AS count FROM reservation WHERE user_id = ?`;
 
-    database.get(checkReservationsQuery, [id], (err, result) => {
+    database.get(checkReservationsQuery, [userId], (err, result) => {
       if (err) {
         return reject({ message: "Erreur lors de la vérification des réservations.", code: "DB_ERROR" });
       }
@@ -184,12 +185,12 @@ exports.deleteUser = function (id) {
         return reject({ message: "Impossible de supprimer l'utilisateur car il a des réservations actives.", code: "USER_HAS_RESERVATIONS" });
       }
 
-      // Si pas de réservation, anonymisation des données
+      // Soft delete : anonymisation des données
       const anonymizedData = {
         lastname: "Anonyme",
         firstname: "Utilisateur",
         birthdate: null,
-        email: `anonymous_${id}@fisherfans.com`,
+        email: `anonymous_${userId}@fisherfans.com`,
         password: "deleted_user",
         phoneNumber: null,
         address: null,
@@ -203,12 +204,11 @@ exports.deleteUser = function (id) {
         urlUserPicture: null,
         SIRETNumber: null,
         RCNumber: null,
-        companyName: null,
-        isDeleted: true
+        companyName: null
       };
 
       const updateFields = Object.keys(anonymizedData).map((key) => `${key} = ?`).join(", ");
-      const values = [...Object.values(anonymizedData), id];
+      const values = [...Object.values(anonymizedData), userId];
 
       const query = `UPDATE user SET ${updateFields} WHERE id = ?`;
 
@@ -224,10 +224,11 @@ exports.deleteUser = function (id) {
 
 
 
+
 /**
  * Mettre à jour les données d'un utilisateur
  */
-exports.majUser = function (id, updatedData) {
+exports.majUser = function (userId, updatedData) {
   return new Promise((resolve, reject) => {
     const allowedFields = [
       "lastname", "firstname", "birthdate", "phoneNumber", "address", "postalCode", "city",
@@ -246,10 +247,10 @@ exports.majUser = function (id, updatedData) {
     });
 
     if (updates.length === 0) {
-      return reject({ message: "Aucune donnée valide à mettre à jour." });
+      return reject({ message: "Aucune donnée valide à mettre à jour.", code: "NO_VALID_DATA" });
     }
 
-    values.push(id); // Ajouter l'ID à la fin pour la clause WHERE
+    values.push(userId); // Ajouter l'ID pour la clause WHERE
     const query = `UPDATE user SET ${updates.join(", ")} WHERE id = ?`;
 
     database.run(query, values, function (err) {
@@ -262,14 +263,12 @@ exports.majUser = function (id, updatedData) {
 };
 
 
-/**
- * Récupérer toutes les réservations d'un utilisateur
- */
-exports.getUserReservations = function (user_id) {
+
+exports.getUserReservations = function (userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM reservation WHERE user_id = ?`;
 
-    database.all(query, [user_id], (err, rows) => {
+    database.all(query, [userId], (err, rows) => {
       if (err) {
         return reject(err);
       }
@@ -277,6 +276,7 @@ exports.getUserReservations = function (user_id) {
     });
   });
 };
+
 
 
 
