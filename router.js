@@ -16,9 +16,12 @@ const {
 } = require('./controllers/User.js');
 
 const {
-  
-    createBoat
-
+    createBoat,
+    boatDatas,
+    getFilteredBoats,
+    deleteBoat,
+    majBoat,
+    getBoatsInBoundingBox
 } = require('./controllers/Boat.js');
 
 const {
@@ -39,11 +42,16 @@ const {
 
 const {
     createFishingBook,
-    deleteFishingBook,
-    updateFishingBook,
-    updateFishingBookById,
-    updateFishingBookById_1
 } = require('./controllers/FishingBook.js');
+
+const { 
+    createBookPage,
+    getUserBookPages,
+    deleteBookPage,
+    updateBookPage,
+    updateBookPageForUser
+} = require('./controllers/BookPage.js');
+
 
 
 /** Routes pour "user" **/
@@ -58,6 +66,7 @@ router.put('/user', authenticateUser, (req, res) => { majUser(req, res); });
 router.get('/user/reservations', authenticateUser, (req, res) => { getUserReservations(req, res); });
 
 
+// MANQUE AUTHENTICATE
 /** Routes pour "boat" **/
 router.get('/boats', (req, res) => { boatDatas(req, res); });
 router.get('/boatsFiltered', (req, res) => { getFilteredBoats(req, res); });
@@ -66,14 +75,16 @@ router.put('/boat/:id', (req, res) => { majBoat(req, res); });
 router.delete('/boat/:id', (req, res) => { deleteBoat(req, res); });
 router.get('/boats/in-bbox', (req, res) => { getBoatsInBoundingBox(req, res); });
 
+
+// MANQUE AUTHENTICATE
 /** Routes pour "boatTrip" **/
-//router.get('/boatTrip/:id', (req, res, next) => { getBoatTrip(req, res, next, parseInt(req.params.id)); });
-// BF22 L’API FF devra renvoyer une liste de sorties en filtrant sur un sous- ensemble quelconque des caractéristiques d’une sortie 
-//router.get('/boatTrip', (req, res) => { getBoatTripByParams(req, res); });
+router.get('/boatTrip/:id', (req, res, next) => { getBoatTrip(req, res, next, parseInt(req.params.id)); });
+//BF22 L’API FF devra renvoyer une liste de sorties en filtrant sur un sous- ensemble quelconque des caractéristiques d’une sortie 
+router.get('/boatTrip', (req, res) => { getBoatTripByParams(req, res); });
 router.post('/boatTrip', (req, res) => { createBoatTrip(req, res); });
-//router.put('/boatTrip/:id', (req, res, next) => { updateBoatTrip(req, res, next, parseInt(req.params.id)); });
-//router.delete('/boatTrip/:id', (req, res, next) => { deleteBoatTrip(req, res, next, parseInt(req.params.id)); });
-//router.patch('/boatTrip/:id', (req, res, next) => { updateBoatTrip_1(req, res, next, parseInt(req.params.id)); });*/
+router.put('/boatTrip/:id', (req, res, next) => { updateBoatTrip(req, res, next, parseInt(req.params.id)); });
+router.delete('/boatTrip/:id', (req, res, next) => { deleteBoatTrip(req, res, next, parseInt(req.params.id)); });
+router.patch('/boatTrip/:id', (req, res, next) => { updateBoatTrip_1(req, res, next, parseInt(req.params.id)); });
 
 
 
@@ -88,12 +99,14 @@ router.put('/reservation/:id', authenticateUser, (req, res) => { majReservation(
 
 /** Routes pour "fishingBook" **/
 // routes privées
-/*router.post('/fishingBook', (req, res) => { createFishingBook(req, res); });
-router.put('/fishingBook/:id/:User_id', (req, res) => { updateFishingBookById(req, res); });
-router.patch('/fishingBook/:id/:User_id', (req, res) => { updateFishingBookById_1(req, res); });
-router.put('/fishingBook/:id', (req, res) => { updateFishingBook(req, res); });
-router.delete('/fishingBook/:id', (req, res) => { deleteFishingBook(req, res); });
-router.patch('/fishingBook/:id', (req, res) => { majDatasFishingBook(req, res); });*/
+router.post('/fishingBook', authenticateUser, (req, res) => { createFishingBook(req, res); });
+router.post('/fishingBook/page', authenticateUser, (req, res) => { createBookPage(req, res); });
+router.get('/fishingBook/:fishingBookId/pages', authenticateUser, (req, res) => { getUserBookPages(req, res); });
+router.delete('/fishingBook/:fishingBookId/page/:id', authenticateUser, (req, res) => { deleteBookPage(req, res); });
+// A TESTER
+router.put('/fishingBook/page/:id', authenticateUser, (req, res) => { updateBookPage(req, res); });
+// A TESTER
+router.put('/fishingBook/:fishingBookId/page/:id', authenticateUser, (req, res) => { updateBookPageForUser(req, res); });
 
 /** Exporter le router **/
 module.exports = router;

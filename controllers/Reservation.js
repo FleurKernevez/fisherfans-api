@@ -36,9 +36,9 @@ module.exports.createReservation = function createReservation(req, res) {
  * Récupérer les réservations de l'utilisateur par date
  */
 module.exports.reservationDatas = function reservationDatas(req, res) {
-  const user_id = req.user.id; // Récupérer l'ID de l'utilisateur authentifié
+  const userId = req.user.id; // Récupérer l'ID de l'utilisateur authentifié
 
-  Reservation.getReservationsByDate(user_id)
+  Reservation.getReservationsByDate(userId)
     .then(reservations => {
       res.status(200).json(reservations);
     })

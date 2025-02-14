@@ -224,7 +224,6 @@ exports.deleteUser = function (userId) {
 
 
 
-
 /**
  * Mettre à jour les données d'un utilisateur
  */

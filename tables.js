@@ -143,6 +143,27 @@ const createReservationTable = () => {
     });
 }
 
+const createFishingBookTable = () => {
+    const query = `
+        CREATE TABLE IF NOT EXISTS "fishingBook" (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,  
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+        );
+    `;
+
+    database.run(query, function (err) {
+        if (err) {
+            console.error('Erreur lors de la création de la table "fishingBook":', err.message);
+        } else {
+            console.log('Table "fishingBook" créée ou déjà existante.');
+        }
+    });
+};
+
+
 // Créer la table 'bookPage' si elle n'existe pas
 const createBookPageTable = () => {
     const query = `
@@ -156,20 +177,23 @@ const createBookPageTable = () => {
             fishingPlace TEXT,
             fishingDate TEXT,
             releasedFish BLOB,
-            user_id INTEGER,
-            FOREIGN KEY (user_id) REFERENCES user(id)
+            user_id INTEGER NOT NULL,
+            fishingBook_id INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+            FOREIGN KEY (fishingBook_id) REFERENCES fishingBook(id) ON DELETE CASCADE
         );
     `;
-    
-    // Exécuter la requête pour créer la table
-    database.run(query, function(err) {
+
+    database.run(query, function (err) {
         if (err) {
             console.error('Erreur lors de la création de la table "bookPage":', err.message);
         } else {
             console.log('Table "bookPage" créée ou déjà existante.');
         }
     });
-}
+};
+
+
 
 /**
  * Execute la création des toutes les tables si elles n'existent pas déjà
@@ -184,6 +208,7 @@ const createAllTables = () => {
     createBoatTable();
     createBoatTripTable();
     createReservationTable();
+    createFishingBookTable();
     createBookPageTable();
 }
 

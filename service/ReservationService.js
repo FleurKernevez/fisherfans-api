@@ -55,7 +55,6 @@ exports.createReservation = function (boatTrip_id, choosenDate, seatsBooked, tot
 
 
 
-
 /**
  * Récupérer les réservations de l'utilisateur avec option de filtrage par date
  */
