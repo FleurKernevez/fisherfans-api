@@ -3,6 +3,7 @@ const app = express();
 const port = 3000;
 const { createAllTables } = require('./tables.js');
 const router = require('./router.js'); // Importer le router
+require('dotenv').config();
 
 /* Exécuter le fichier table.js pour créer les tables */
 createAllTables();
