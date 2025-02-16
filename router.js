@@ -103,9 +103,7 @@ router.post('/fishingBook', authenticateUser, (req, res) => { createFishingBook(
 router.post('/fishingBook/page', authenticateUser, (req, res) => { createBookPage(req, res); });
 router.get('/fishingBook/:fishingBookId/pages', authenticateUser, (req, res) => { getUserBookPages(req, res); });
 router.delete('/fishingBook/:fishingBookId/page/:id', authenticateUser, (req, res) => { deleteBookPage(req, res); });
-// A TESTER
 router.put('/fishingBook/page/:id', authenticateUser, (req, res) => { updateBookPage(req, res); });
-// A TESTER
 router.put('/fishingBook/:fishingBookId/page/:id', authenticateUser, (req, res) => { updateBookPageForUser(req, res); });
 
 /** Exporter le router **/

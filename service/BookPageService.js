@@ -83,20 +83,82 @@ exports.deleteBookPage = function (bookPageId, user_id) {
 
 
 /**
- * Modifier une page du FishingBook 
+ * Modifier une page du FishingBook (BF16)
  */
-exports.updateBookPage = function (bookPageId, user_id, updatedData) {
-   
+exports.updateBookPage = function (bookPageId, userId, updatedData) {
+    return new Promise((resolve, reject) => {
+        const allowedFields = [
+            "fishName", "urlFishPicture", "comment", "size", "weight",
+            "fishingPlace", "fishingDate", "releasedFish"
+        ];
+
+        const updates = [];
+        const values = [];
+
+        Object.keys(updatedData).forEach(key => {
+            if (allowedFields.includes(key) && updatedData[key] !== undefined) {
+                updates.push(`${key} = ?`);
+                values.push(updatedData[key]);
+            }
+        });
+
+        if (updates.length === 0) {
+            return reject({ message: "Aucune donnée valide à mettre à jour.", code: "NO_VALID_DATA" });
+        }
+
+        values.push(bookPageId, userId);
+        const query = `UPDATE bookPage SET ${updates.join(", ")} WHERE id = ? AND user_id = ?`;
+
+        database.run(query, values, function (err) {
+            if (err) {
+                return reject(new Error("Erreur lors de la modification de la page"));
+            }
+            resolve({ affectedRows: this.changes });
+        });
+    });
 };
 
 
 
 /**
- * Modifier une page donnée du carnet de pêche d’un utilisateur (BF18)
+ * Modifier une page donnée du carnet de pêche d’un utilisateur donné (BF18)
  */
-exports.updateBookPageForUser = function (fishingBookId, bookPageId, user_id, fishName, urlFishPicture, comment, size, weight, fishingPlace, fishingDate, releasedFish) {
-   
+exports.updateBookPageForUser = function (fishingBookId, bookPageId, userId, updatedData) {
+    return new Promise((resolve, reject) => {
+        const allowedFields = [
+            "fishName", "urlFishPicture", "comment", "size", "weight",
+            "fishingPlace", "fishingDate", "releasedFish"
+        ];
+
+        const updates = [];
+        const values = [];
+
+        Object.keys(updatedData).forEach(key => {
+            if (allowedFields.includes(key) && updatedData[key] !== undefined) {
+                updates.push(`${key} = ?`);
+                values.push(updatedData[key]);
+            }
+        });
+
+        if (updates.length === 0) {
+            return reject({ message: "Aucune donnée valide à mettre à jour.", code: "NO_VALID_DATA" });
+        }
+
+        values.push(bookPageId, fishingBookId, userId);
+        const query = `UPDATE bookPage SET ${updates.join(", ")} WHERE id = ? AND fishingBook_id = ? AND user_id = ?`;
+
+        database.run(query, values, function (err) {
+            if (err) {
+                return reject(new Error("Erreur lors de la modification de la page spécifique"));
+            }
+            resolve({ affectedRows: this.changes });
+        });
+    });
 };
+
+
+
+
 
 
 
