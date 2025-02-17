@@ -105,8 +105,7 @@ const createBoatTripTable = () => {
             boat_id INTEGER,
             reservation_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES user(id),
-            FOREIGN KEY (boat_id) REFERENCES boat(id),
-            FOREIGN KEY (reservation_id) REFERENCES reservation(id)   
+            FOREIGN KEY (boat_id) REFERENCES boat(id)
         );
     `;
     

@@ -26,12 +26,11 @@ const {
 } = require('./controllers/Boat.js');
 
 const {
-    createBoatTrip, 
-    deleteBoatTrip, 
-    updateBoatTrip, 
-    updateBoatTrip_1,
+    createBoatTrip,
     getBoatTrip,
-    getBoatTripByParams
+    getBoatTripByParams, 
+    deleteBoatTrip, 
+    updateBoatTrip
 } = require('./controllers/BoatTrip.js');
 
 const {
@@ -76,16 +75,13 @@ router.delete('/boat/:id', authenticateUser, (req, res) => { deleteBoat(req, res
 router.put('/boat/:id', authenticateUser, (req, res) => { majBoat(req, res); });
 
 
-// MANQUE AUTHENTICATE
 /** Routes pour "boatTrip" **/
-router.get('/boatTrip/:id', (req, res, next) => { getBoatTrip(req, res, next, parseInt(req.params.id)); });
+router.post('/boatTrip', authenticateUser,  (req, res) => { createBoatTrip(req, res); });
+router.get('/boatTrip/user/:userId', authenticateUser, (req, res, next) => { getBoatTrip(req, res, next, parseInt(req.params.id)); });
 //BF22 L’API FF devra renvoyer une liste de sorties en filtrant sur un sous- ensemble quelconque des caractéristiques d’une sortie 
-router.get('/boatTrip', (req, res) => { getBoatTripByParams(req, res); });
-router.post('/boatTrip', (req, res) => { createBoatTrip(req, res); });
-router.put('/boatTrip/:id', (req, res, next) => { updateBoatTrip(req, res, next, parseInt(req.params.id)); });
-router.delete('/boatTrip/:id', (req, res, next) => { deleteBoatTrip(req, res, next, parseInt(req.params.id)); });
-router.patch('/boatTrip/:id', (req, res, next) => { updateBoatTrip_1(req, res, next, parseInt(req.params.id)); });
-
+router.get('/boatTrip', authenticateUser, (req, res) => { getBoatTripByParams(req, res); });
+router.delete('/boatTrip/:id', authenticateUser, (req, res, next) => { deleteBoatTrip(req, res, next, parseInt(req.params.id)); });
+router.put('/boatTrip/:id', authenticateUser, (req, res, next) => { updateBoatTrip(req, res, next, parseInt(req.params.id)); });
 
 
 /** Routes pour "reservation" **/
@@ -94,7 +90,6 @@ router.post('/reservation', authenticateUser, (req, res) => { createReservation(
 router.get('/reservations', authenticateUser, (req, res) => { reservationDatas(req, res); });
 router.delete('/reservation/:id', authenticateUser, (req, res) => { deleteReservation(req, res); });
 router.put('/reservation/:id', authenticateUser, (req, res) => { majReservation(req, res); });
-
 
 
 /** Routes pour "fishingBook" **/
