@@ -5,47 +5,39 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-/**
- * Créer un nouvel utilisateur 
- */
+// Créer un nouvel utilisateur 
 exports.createUser = function (userData) {
   return new Promise((resolve, reject) => {
-    // Hacher le mot de passe
-    const hashedPassword = bcrypt.hashSync(userData.password, 10);
-    userData.password = hashedPassword;
+    console.log("DEBUG: Données utilisateur après vérification:", userData);
 
-    // Vérification des champs professionnels
-    if (userData.status === "professionnel") {
-      const professionalFields = ['SIRETNumber', 'RCNumber', 'companyName'];
-      const missingProfessionalFields = professionalFields.filter(field => !userData[field]);
+    const fields = [
+      "lastname", "firstname", "birthdate", "email", "password", "phoneNumber", "address",
+      "postalCode", "city", "languagesSpoken", "insuranceNumber", "boatLicenceNumber",
+      "status", "activityType", "urlUserPicture", "SIRETNumber", "RCNumber", "companyName",
+      "boatTrip_id", "reservation_id"
+    ];
 
-      if (missingProfessionalFields.length > 0) {
-        return reject({ message: `Les professionnels doivent fournir : ${missingProfessionalFields.join(', ')}`, code: "MISSING_PROFESSIONAL_FIELDS" });
-      }
-    } else {
-      // Si l'utilisateur est particulier, vider ces champs pour éviter les incohérences
-      userData.SIRETNumber = null;
-      userData.RCNumber = null;
-      userData.companyName = null;
-    }
-
-    const fields = ["lastname", "firstname", "birthdate", "email", "password", "phoneNumber", "address", "status", "SIRETNumber", "RCNumber", "companyName"];
     const placeholders = fields.map(() => "?").join(", ");
     const query = `INSERT INTO user (${fields.join(", ")}) VALUES (${placeholders});`;
-    const values = fields.map(field => userData[field] || null);
+
+    const values = fields.map(field => userData[field] !== undefined ? userData[field] : null);
+
+    console.log("DEBUG: Exécution SQL ->", query);
+    console.log("DEBUG: Valeurs insérées ->", values);
 
     database.run(query, values, function (err) {
       if (err) {
+        console.error("Erreur SQL lors de l'insertion de l'utilisateur :", err);
         if (err.message.includes("UNIQUE constraint failed: user.email")) {
           return reject({ message: `L'email ${userData.email} est déjà enregistré.`, code: "EMAIL_ALREADY_EXISTS" });
         }
         return reject(err);
       }
+      console.log("DEBUG: Utilisateur créé avec succès, ID :", this.lastID);
       resolve({ id: this.lastID });
     });
   });
 };
-
 
 
 /**
@@ -106,16 +98,22 @@ exports.getUserByEmail = function (email) {
  */
 exports.getUserById = function (id) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM user WHERE id = ?`;
+    const query = `
+      SELECT id, lastname, firstname, birthdate, email, phoneNumber, address, postalCode, city,
+             languagesSpoken, insuranceNumber, boatLicenceNumber, status, activityType,
+             urlUserPicture, SIRETNumber, RCNumber, companyName, boatTrip_id, reservation_id
+      FROM user WHERE id = ?`;
 
     database.get(query, [id], (err, row) => {
       if (err) {
+        console.error("Erreur SQL lors de la récupération de l'utilisateur :", err);
         return reject(err);
       }
-      resolve(row);
+      resolve(row); // Retourne l'utilisateur ou null si non trouvé
     });
   });
 };
+
 
 
 /**

@@ -1,65 +1,167 @@
 'use strict';
 
-const sqlite3 = require('sqlite3').verbose();
+const { database } = require('../tables.js');
 
-const database = new sqlite3.Database('./fisher-fans.db', (err) => {
-  if (err) {
-      console.error('Erreur lors de la connexion à la base de données :', err.message);
-  } else {
-      console.log('Connexion réussie à la base de données SQLite.');
-  }
-});
 
-// Get a boat with some caracteristics
-exports.getFilteredBoats = function(filters) {
+// Ajouter un bateau dans la base de données
+exports.createBoat = function (boatData) {
   return new Promise((resolve, reject) => {
-    let sql = "SELECT * FROM boat WHERE 1=1";
-    const params = [];
+    const query = `
+      INSERT INTO boat (name, description, brand, productionYear, urlBoatPicture, licenceType, type, equipment, 
+          cautionAmount, capacityMax, bedsNumber, homePort, latitude1, longitude1, latitude2, longitude2, 
+          engineType, enginePower, user_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    // Ajouter dynamiquement des conditions pour chaque filtre
-    for (const [key, value] of Object.entries(filters)) {
-      if (Array.isArray(value)) {
-        sql += ` AND ${key} IN (${value.map(() => '?').join(', ')})`;
-        params.push(...value);
-      } else {
-        sql += ` AND ${key} = ?`;
-        params.push(value);
+    const values = [
+      boatData.name, boatData.description, boatData.brand, boatData.productionYear, boatData.urlBoatPicture,
+      boatData.licenceType, boatData.type, boatData.equipment, boatData.cautionAmount, boatData.capacityMax,
+      boatData.bedsNumber, boatData.homePort, boatData.latitude1, boatData.longitude1, boatData.latitude2,
+      boatData.longitude2, boatData.engineType, boatData.enginePower, boatData.user_id
+    ];
+
+    database.run(query, values, function (err) {
+      if (err) {
+        console.error("Erreur lors de l'insertion du bateau :", err.message);
+        return reject(new Error("Erreur lors de la création du bateau."));
       }
-    }
+      resolve({ id: this.lastID });
+    });
+  });
+};
 
-    database.all(sql, params, (error, rows) => {
+
+// Récupérer tous les bateaux d'un utilisateur
+exports.getAllBoats = function (user_id) {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT * FROM boat`;
+    
+    database.all(sql, [user_id], (error, rows) => {
       if (error) {
-        return reject(error); 
+        return reject(error);
       }
       resolve(rows);
     });
   });
 };
 
-// Create a boat
-exports.createBoat = function(boatLicenceNumber,name,description,brand,productionYear,urlBoatPicture,licenseType,type,equipements,cautionAmount,capacityMax,bedsNumber,homePort,latitude,longitude,egineType,eginePower) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
 
-//Delete a boat
-exports.deleteBoat = function(id) {
-  return new Promise(function(resolve, reject) {
-    const sql = 'DELETE FROM boat WHERE id = ?'; // Requête SQL pour supprimer un bateau
-    database.run(sql, [id], function(error) {
-      if (error) {
-        return reject(error); // Rejeter la promesse en cas d'erreur
+// Récupérer une liste de bateaux filtrés selon leurs caractéristiques 
+exports.getFilteredBoats = function (filters) {
+  return new Promise((resolve, reject) => {
+    let sql = "SELECT * FROM boat WHERE 1=1"; // Permet d'ajouter dynamiquement des filtres
+    const params = [];
+
+    const allowedFilters = {
+      "name": "TEXT",
+      "brand": "TEXT",
+      "type": "TEXT",
+      "licenceType": "TEXT",
+      "capacityMax": "INTEGER",
+      "engineType": "TEXT"
+    };
+
+    // Appliquer les filtres dynamiques
+    Object.keys(filters).forEach(key => {
+      if (allowedFilters[key] && filters[key]) {
+        if (allowedFilters[key] === "INTEGER") {
+          sql += ` AND ${key} = ?`;
+          params.push(parseInt(filters[key], 10));  // Convertir en INT
+        } else {
+          sql += ` AND ${key} = ?`;
+          params.push(filters[key]);
+        }
       }
-      resolve({ affectedRows: this.changes }); // Résoudre avec le nombre de lignes affectées
+    });
+
+    database.all(sql, params, (error, rows) => {
+      if (error) {
+        return reject(error);
+      }
+
+      if (!rows || rows.length === 0) {
+        console.warn("Aucun bateau trouvé avec ces filtres:", filters);
+        return reject({
+          success: false,
+          errorCode: "NO_BOATS_FOUND",
+          message: `Aucun bateau ne correspond aux filtres fournis.`,
+          filters: filters
+        });
+      }
+      resolve(rows);
     });
   });
 };
 
 
-// Update a boat 
-exports.updateBoat = function(id, updates) {
-  return new Promise(function(resolve, reject) {
+// Récupérer les bateaux dans une zone géographique donnée
+exports.getBoatsInBoundingBox = function (minLatitude, maxLatitude, minLongitude, maxLongitude) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT * FROM boat
+      WHERE 
+        latitude1 BETWEEN ? AND ? AND longitude1 BETWEEN ? AND ? 
+        AND latitude2 BETWEEN ? AND ? AND longitude2 BETWEEN ? AND ?
+    `;
+
+    database.all(sql, [minLatitude, maxLatitude, minLongitude, maxLongitude, minLatitude, maxLatitude, minLongitude, maxLongitude], (error, rows) => {
+      if (error) {
+        console.error("Erreur SQL lors de la récupération des bateaux :", error);
+        return reject(new Error("DATABASE_ERROR"));
+      }
+      resolve(rows);
+    });
+  });
+};
+
+
+// Récupérer les bateaux d'un user
+exports.getBoatsByUserId = function (userId) {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT * FROM boat WHERE user_id = ?`;
+
+    database.all(sql, [userId], (error, rows) => {
+      if (error) {
+        console.error("Erreur lors de la récupération des bateaux :", error);
+        return reject({
+          success: false,
+          errorCode: "DATABASE_ERROR",
+          message: "Erreur interne du serveur lors de la récupération des bateaux."
+        });
+      }
+
+      if (!rows || rows.length === 0) {
+        console.warn(`Aucun bateau trouvé en base pour l'utilisateur ID: ${userId}`);
+        return reject({
+          success: false,
+          errorCode: "NO_BOATS_FOUND",
+          message: "Aucun bateau n'existe actuellement pour cet utilisateur."
+        });
+      }
+      resolve(rows);
+    });
+  });
+};
+
+
+// Supprimer un bateau par ID
+exports.deleteBoat = function (id) {
+  return new Promise((resolve, reject) => {
+    const sql = 'DELETE FROM boat WHERE id = ?';
+    database.run(sql, [id], function (error) {
+      if (error) {
+        console.error("Erreur lors de la suppression du bateau :", error);
+        return reject(new Error("DATABASE_ERROR"));
+      }
+      resolve({ affectedRows: this.changes });
+    });
+  });
+};
+
+
+// Modifier un bateau
+exports.updateBoat = function (id, updates) {
+  return new Promise(function (resolve, reject) {
     // Vérifier si des champs à mettre à jour ont été fournis
     if (!id || !updates || Object.keys(updates).length === 0) {
       return reject(new Error("ID et données de mise à jour sont requis"));
@@ -80,7 +182,7 @@ exports.updateBoat = function(id, updates) {
       WHERE id = ?
     `;
 
-    database.run(sql, params, function(error) {
+    database.run(sql, params, function (error) {
       if (error) {
         return reject(error); // Rejeter la promesse en cas d'erreur
       }
@@ -89,31 +191,22 @@ exports.updateBoat = function(id, updates) {
   });
 };
 
-// find a boat in function of the place
-exports.getBoatsInBoundingBox = function(minLatitude, maxLatitude, minLongitude, maxLongitude) {
+
+// Récupérer un bateau par son ID
+exports.getBoatById = function (id) {
   return new Promise((resolve, reject) => {
-    const sql = `
-      SELECT *
-      FROM boat
-      WHERE
-        latitude1 BETWEEN ? AND ? AND
-        longitude1 BETWEEN ? AND ? AND
-        latitude2 BETWEEN ? AND ? AND
-        longitude2 BETWEEN ? AND ?
-    `;
-
-    const params = [
-      minLatitude, maxLatitude,
-      minLongitude, maxLongitude,
-      minLatitude, maxLatitude,
-      minLongitude, maxLongitude,
-    ];
-
-    database.all(sql, params, (error, rows) => {
+    const sql = `SELECT * FROM boat WHERE id = ?`;
+    database.get(sql, [id], (error, row) => {
       if (error) {
-        return reject(error); // Rejeter en cas d'erreur
+        console.error("Erreur lors de la récupération du bateau :", error);
+        return reject(new Error("DATABASE_ERROR"));
       }
-      resolve(rows); // Résoudre avec les bateaux trouvés
+      resolve(row); // Retourne `null` si aucun bateau trouvé
     });
   });
 };
+
+
+
+
+

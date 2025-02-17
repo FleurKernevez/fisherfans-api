@@ -3,9 +3,7 @@
 const { database } = require('../tables.js');
 
 
-/**
- * Créer une nouvelle réservation
- */
+// Créer une nouvelle réservation
 exports.createReservation = function (boatTrip_id, choosenDate, seatsBooked, totalPrice, userId) {
   return new Promise((resolve, reject) => {
     // Vérifier la capacité maximale du boatTrip
@@ -54,10 +52,7 @@ exports.createReservation = function (boatTrip_id, choosenDate, seatsBooked, tot
 };
 
 
-
-/**
- * Récupérer les réservations de l'utilisateur avec option de filtrage par date
- */
+// Récupérer les réservations de l'utilisateur avec option de filtrage par date
 exports.getReservationsByDate = function (user_id, choosenDate = null) {
   return new Promise((resolve, reject) => {
     let query = `SELECT * FROM reservation WHERE user_id = ?`;
@@ -78,10 +73,7 @@ exports.getReservationsByDate = function (user_id, choosenDate = null) {
 };
 
 
-
-/**
- * Supprimer une réservation si elle appartient à l'utilisateur
- */
+// Supprimer une réservation si elle appartient à l'utilisateur
 exports.deleteReservation = function (id, userId) {
   return new Promise((resolve, reject) => {
     const query = `DELETE FROM reservation WHERE id = ? AND user_id = ?`;
@@ -96,10 +88,7 @@ exports.deleteReservation = function (id, userId) {
 };
 
 
-
-/**
- * Mettre à jour une réservation si elle appartient à l'utilisateur
- */
+// Mettre à jour une réservation si elle appartient à l'utilisateur
 exports.updateReservation = function (id, updatedData, userId) {
   return new Promise((resolve, reject) => {
     const allowedFields = ["choosenDate", "seatsBooked", "totalPrice", "boatTrip_id"];

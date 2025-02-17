@@ -48,6 +48,7 @@ const createUserTable = () => {
     });
 }
 
+
 // Créer la table 'boat' si elle n'existe pas
 const createBoatTable = () => {
     const query = `
@@ -60,7 +61,7 @@ const createBoatTable = () => {
             urlBoatPicture TEXT,
             licenceType TEXT CHECK (licenceType IN ('côtier', 'fluvial')),                     
             type TEXT CHECK (type IN ('open', 'cabine', 'catamaran', 'voilier', 'jet-ski', 'canoë')),
-            equipment TEXT CHECK (equipment IN ('sondeur', 'vivier', 'échelle', 'GPS', 'porte-cannes', 'radio VHF')),
+            equipment TEXT,
             cautionAmount REAL,
             capacityMax INTEGER,
             bedsNumber INTEGER,
@@ -85,6 +86,7 @@ const createBoatTable = () => {
         }
     });
 }
+
 
 // Créer la table 'boatTrip' si elle n'existe pas
 const createBoatTripTable = () => {
@@ -118,6 +120,7 @@ const createBoatTripTable = () => {
     });
 }
 
+
 // Créer la table 'reservation' si elle n'existe pas
 const createReservationTable = () => {
     const query = `
@@ -142,6 +145,7 @@ const createReservationTable = () => {
         }
     });
 }
+
 
 const createFishingBookTable = () => {
     const query = `
@@ -192,7 +196,6 @@ const createBookPageTable = () => {
         }
     });
 };
-
 
 
 /**

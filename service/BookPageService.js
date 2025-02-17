@@ -81,7 +81,6 @@ exports.deleteBookPage = function (bookPageId, user_id) {
 };
 
 
-
 /**
  * Modifier une page du FishingBook (BF16)
  */

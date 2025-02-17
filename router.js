@@ -19,9 +19,10 @@ const {
     createBoat,
     boatDatas,
     getFilteredBoats,
+    getBoatsInBoundingBox,
+    getBoatsByUserId,
     deleteBoat,
     majBoat,
-    getBoatsInBoundingBox
 } = require('./controllers/Boat.js');
 
 const {
@@ -55,7 +56,6 @@ const {
 
 
 /** Routes pour "user" **/
-// routes privées
 router.post('/user', (req, res) => { createUser(req, res); });
 router.post('/login', (req, res) => { login(req, res); });
 router.get('/user/infos', authenticateUser, (req, res) => { getUserById(req, res); }); 
@@ -66,14 +66,14 @@ router.put('/user', authenticateUser, (req, res) => { majUser(req, res); });
 router.get('/user/reservations', authenticateUser, (req, res) => { getUserReservations(req, res); });
 
 
-// MANQUE AUTHENTICATE
 /** Routes pour "boat" **/
-router.get('/boats', (req, res) => { boatDatas(req, res); });
-router.get('/boatsFiltered', (req, res) => { getFilteredBoats(req, res); });
-router.post('/boat', (req, res) => { createBoat(req, res); });
-router.put('/boat/:id', (req, res) => { majBoat(req, res); });
-router.delete('/boat/:id', (req, res) => { deleteBoat(req, res); });
-router.get('/boats/in-bbox', (req, res) => { getBoatsInBoundingBox(req, res); });
+router.post('/boat', authenticateUser, (req, res) => { createBoat(req, res); });
+router.get('/boats', authenticateUser, (req, res) => { boatDatas(req, res); });
+router.get('/boatsFiltered', authenticateUser, (req, res) => { getFilteredBoats(req, res); });
+router.get('/boats/in-bbox', authenticateUser, (req, res) => { getBoatsInBoundingBox(req, res); });
+router.get('/boats/user/:userId', authenticateUser, (req, res) => { getBoatsByUserId(req, res); });
+router.delete('/boat/:id', authenticateUser, (req, res) => { deleteBoat(req, res); });
+router.put('/boat/:id', authenticateUser, (req, res) => { majBoat(req, res); });
 
 
 // MANQUE AUTHENTICATE
@@ -108,3 +108,4 @@ router.put('/fishingBook/:fishingBookId/page/:id', authenticateUser, (req, res) 
 
 /** Exporter le router **/
 module.exports = router;
+
