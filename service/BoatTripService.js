@@ -6,14 +6,15 @@ const { database } = require('../tables.js');
 exports.createBoatTrip = function (boatTripData) {
   return new Promise((resolve, reject) => {
     const query = `
-      INSERT INTO boatTrip (title, practicalInformation, type, priceType, startDate, endDate, passengersNumber, price, user_id, boat_id, reservation_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+    INSERT INTO boatTrip (title, practicalInformation, type, priceType, startDate, endDate, passengersNumber, price, user_id, boat_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  
 
     const values = [
       boatTripData.title, boatTripData.practicalInformation, boatTripData.type, boatTripData.priceType,
       boatTripData.startDate, boatTripData.endDate, boatTripData.passengersNumber, boatTripData.price,
-      boatTripData.user_id, boatTripData.boat_id, boatTripData.reservation_id
+      boatTripData.user_id, boatTripData.boat_id
     ];
 
     database.run(query, values, function (err) {

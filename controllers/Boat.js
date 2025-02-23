@@ -165,36 +165,26 @@ module.exports.getBoatsInBoundingBox = function (req, res) {
 
 // Récupérer les bateaux d'un user
 module.exports.getBoatsByUserId = function (req, res) {
-  const { userId } = req.params;
-  const requesterId = req.user.id; // ID du user authentifié
+  const userId = req.user.id; // Récupération de l'ID utilisateur depuis le token
 
-  // Vérifier que l'ID utilisateur est valide
-  if (!userId || isNaN(userId)) {
+  // Vérification de l'ID utilisateur (juste une sécurité supplémentaire)
+  if (!userId) {
     return utils.writeJson(res, {
       success: false,
-      errorCode: "INVALID_USER_ID",
-      message: "L'identifiant de l'utilisateur est requis et doit être un nombre valide."
+      errorCode: "MISSING_USER_ID",
+      message: "L'ID utilisateur est introuvable dans le token d'authentification."
     }, 400);
   }
-  // Vérifier que l'utilisateur connecté est autorisé à voir ces informations
-  if (parseInt(userId) !== requesterId) {
-    return utils.writeJson(res, {
-      success: false,
-      errorCode: "FORBIDDEN",
-      message: "Vous n'êtes pas autorisé à accéder aux bateaux de cet utilisateur."
-    }, 403);
-  }
 
-  // Appel au service pour récupérer les bateaux
-  Boat.getBoatsByUserId(parseInt(userId))
+  // Appel au service pour récupérer les bateaux de l'utilisateur
+  Boat.getBoatsByUserId(userId)
     .then(boats => {
       if (!boats || boats.length === 0) {
         console.warn(`Aucun bateau trouvé pour l'utilisateur ID: ${userId}`);
         return utils.writeJson(res, {
           success: false,
           errorCode: "NO_BOATS_FOUND",
-          message: "Aucun bateau trouvé pour cet utilisateur.",
-          user_id: userId
+          message: "Aucun bateau trouvé pour cet utilisateur."
         }, 404);
       }
 

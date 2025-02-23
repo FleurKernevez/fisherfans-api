@@ -9,6 +9,7 @@ const database = new sqlite3.Database("./fisher-fans.db", (err) => {
     }
 });
 
+
 // Créer la table 'user' si elle n'existe pas
 const createUserTable = () => {
     const query = `
@@ -103,7 +104,6 @@ const createBoatTripTable = () => {
             price REAL,
             user_id INTEGER,
             boat_id INTEGER,
-            reservation_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES user(id),
             FOREIGN KEY (boat_id) REFERENCES boat(id)
         );
@@ -146,6 +146,7 @@ const createReservationTable = () => {
 }
 
 
+// Créer la table 'fishingbook' si elle n'existe pas
 const createFishingBookTable = () => {
     const query = `
         CREATE TABLE IF NOT EXISTS "fishingBook" (
@@ -179,7 +180,7 @@ const createBookPageTable = () => {
             weight REAL,
             fishingPlace TEXT,
             fishingDate TEXT,
-            releasedFish BLOB,
+            releasedFish INTEGER CHECK (releasedFish IN (0, 1)),
             user_id INTEGER NOT NULL,
             fishingBook_id INTEGER NOT NULL,
             FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,

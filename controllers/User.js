@@ -114,28 +114,39 @@ exports.getUserById = function (req, res) {
 
 // Récupérer tous les utilisateurs (sans filtre)
 module.exports.getAllUsers = function getAllUsers(req, res) {
-  User.getAllUsers()
+  const userId = req.user.id; // Récupération de l'ID utilisateur depuis le token
+
+  User.getAllUsers(userId)
     .then(users => {
-      res.status(200).json(users);
+      res.status(200).json({
+        success: true,
+        message: "Liste des utilisateurs récupérée avec succès.",
+        data: users
+      });
     })
     .catch(error => {
       console.error("Erreur lors de la récupération des utilisateurs :", error.message);
-      res.status(500).json({ error: "Erreur interne du serveur." });
+      res.status(500).json({ success: false, error: "Erreur interne du serveur." });
     });
 };
 
 
 // Récupérer les utilisateurs avec filtres (firstname, lastname, status, activityType)
 module.exports.getAllUsersByFilter = function getAllUsersByFilter(req, res) {
+  const userId = req.user.id; // Récupération de l'ID utilisateur depuis le token
   const filters = req.query; // Récupération des filtres passés en query parameters
 
-  User.getAllUsersByFilter(filters)
+  User.getAllUsersByFilter(filters, userId)
     .then(users => {
-      res.status(200).json(users);
+      res.status(200).json({
+        success: true,
+        message: "Liste des utilisateurs filtrée avec succès.",
+        data: users
+      });
     })
     .catch(error => {
       console.error("Erreur lors de la récupération des utilisateurs filtrés :", error.message);
-      res.status(500).json({ error: "Erreur interne du serveur." });
+      res.status(500).json({ success: false, error: "Erreur interne du serveur." });
     });
 };
 

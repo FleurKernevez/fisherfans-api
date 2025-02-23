@@ -6,10 +6,17 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 // Créer un nouvel utilisateur 
-exports.createUser = function (userData) {
-  return new Promise((resolve, reject) => {
+exports.createUser = async function (userData) {
+  try {
     console.log("DEBUG: Données utilisateur après vérification:", userData);
 
+    // Vérifier si l'email existe déjà
+    const emailExists = await exports.isEmailExists(userData.email);
+    if (emailExists) {
+      throw { message: `L'email ${userData.email} est déjà utilisé.`, code: "EMAIL_ALREADY_EXISTS" };
+    }
+
+    // Définition des champs à insérer
     const fields = [
       "lastname", "firstname", "birthdate", "email", "password", "phoneNumber", "address",
       "postalCode", "city", "languagesSpoken", "insuranceNumber", "boatLicenceNumber",
@@ -25,24 +32,25 @@ exports.createUser = function (userData) {
     console.log("DEBUG: Exécution SQL ->", query);
     console.log("DEBUG: Valeurs insérées ->", values);
 
-    database.run(query, values, function (err) {
-      if (err) {
-        console.error("Erreur SQL lors de l'insertion de l'utilisateur :", err);
-        if (err.message.includes("UNIQUE constraint failed: user.email")) {
-          return reject({ message: `L'email ${userData.email} est déjà enregistré.`, code: "EMAIL_ALREADY_EXISTS" });
+    return new Promise((resolve, reject) => {
+      database.run(query, values, function (err) {
+        if (err) {
+          console.error("Erreur SQL lors de l'insertion de l'utilisateur :", err);
+          return reject(new Error("DATABASE_ERROR"));
         }
-        return reject(err);
-      }
-      console.log("DEBUG: Utilisateur créé avec succès, ID :", this.lastID);
-      resolve({ id: this.lastID });
+        console.log("DEBUG: Utilisateur créé avec succès, ID :", this.lastID);
+        resolve({ id: this.lastID });
+      });
     });
-  });
+
+  } catch (error) {
+    console.error("Erreur lors de la création de l'utilisateur :", error);
+    throw error;
+  }
 };
 
 
-/**
- * Connexion de l'utilisateur
- */
+//Connexion de l'utilisateur
 exports.login = function (email, password) {
   return new Promise((resolve, reject) => {
     // Vérifier si l'utilisateur existe dans la base de données
@@ -76,9 +84,7 @@ exports.login = function (email, password) {
 };
 
 
-/**
- * Récupérer un utilisateur par email pour la connexion
- */
+// Récupérer un utilisateur par email pour la connexion
 exports.getUserByEmail = function (email) {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM user WHERE email = ?`;
@@ -93,9 +99,7 @@ exports.getUserByEmail = function (email) {
 };
 
 
-/**
- * Récupérer un utilisateur par son ID
- */
+// Récupérer un utilisateur par son ID
 exports.getUserById = function (id) {
   return new Promise((resolve, reject) => {
     const query = `
@@ -115,13 +119,12 @@ exports.getUserById = function (id) {
 };
 
 
-
-/**
- * Récupérer TOUS les utilisateurs (sans filtre)
- */
-exports.getAllUsers = function () {
+// Récupérer TOUS les utilisateurs (sans filtre)
+exports.getAllUsers = function (userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM user`;
+    const query = `
+      SELECT id, lastname, firstname, birthdate, status, activityType, urlUserPicture, companyName 
+      FROM user`; // Exclure email, password, téléphone, adresse, etc.
 
     database.all(query, [], (err, rows) => {
       if (err) {
@@ -133,10 +136,8 @@ exports.getAllUsers = function () {
 };
 
 
-/**
- * Récupérer les utilisateurs avec filtres (firstname, lastname, status, activityType)
- */
-exports.getAllUsersByFilter = function (filters) {
+// Récupérer les utilisateurs avec filtres (firstname, lastname, status, activityType)
+exports.getAllUsersByFilter = function (filters, userId) {
   return new Promise((resolve, reject) => {
     const allowedFilters = ["firstname", "lastname", "status", "activityType"];
     const whereClauses = [];
@@ -149,7 +150,7 @@ exports.getAllUsersByFilter = function (filters) {
       }
     });
 
-    let query = `SELECT * FROM user`; //Récupère toutes les colonnes
+    let query = `SELECT id, lastname, firstname, birthdate, status, activityType, urlUserPicture, companyName FROM user`;
 
     if (whereClauses.length > 0) {
       query += ` WHERE ${whereClauses.join(" AND ")}`;
@@ -165,10 +166,7 @@ exports.getAllUsersByFilter = function (filters) {
 };
 
 
-
-/**
- * Supprimer un utilisateur (soft delete : anonymisation des données)
- */
+// Supprimer un utilisateur (soft delete : anonymisation des données)
 exports.deleteUser = function (userId) {
   return new Promise((resolve, reject) => {
     // Vérifier si l'utilisateur a des réservations actives
@@ -221,10 +219,7 @@ exports.deleteUser = function (userId) {
 };
 
 
-
-/**
- * Mettre à jour les données d'un utilisateur
- */
+// Mettre à jour les données d'un utilisateur
 exports.majUser = function (userId, updatedData) {
   return new Promise((resolve, reject) => {
     const allowedFields = [
@@ -260,7 +255,6 @@ exports.majUser = function (userId, updatedData) {
 };
 
 
-
 exports.getUserReservations = function (userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM reservation WHERE user_id = ?`;
@@ -273,6 +267,26 @@ exports.getUserReservations = function (userId) {
     });
   });
 };
+
+
+// Vérifier si un email existe déjà
+exports.isEmailExists = function (email) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT id FROM user WHERE email = ?`;
+
+    database.get(query, [email], (err, row) => {
+      if (err) {
+        return reject(new Error("DATABASE_ERROR"));
+      }
+      resolve(!!row); // Retourne `true` si l'email existe déjà, sinon `false`
+    });
+  });
+};
+
+
+
+
+
 
 
 

@@ -9,7 +9,7 @@ const User = require('../service/UserService.js')
 module.exports.createBoatTrip = function createBoatTrip(req, res) {
     const user_id = req.user.id; // Récupération de l'ID de l'utilisateur authentifié
 
-    const { title, practicalInformation, type, priceType, startDate, endDate, passengersNumber, price, boat_id, reservation_id } = req.body;
+    const { title, practicalInformation, type, priceType, startDate, endDate, passengersNumber, price, boat_id } = req.body;
 
     // Vérifier si l'utilisateur possède un permis bateau
     User.getUserById(user_id)
@@ -24,7 +24,7 @@ module.exports.createBoatTrip = function createBoatTrip(req, res) {
 
             // Créer le voyage en bateau
             BoatTrip.createBoatTrip({
-                title, practicalInformation, type, priceType, startDate, endDate, passengersNumber, price, user_id, boat_id, reservation_id
+                title, practicalInformation, type, priceType, startDate, endDate, passengersNumber, price, user_id, boat_id
             })
                 .then(createdBoatTrip => utils.writeJson(res, createdBoatTrip, 201))
                 .catch(error => {
@@ -40,8 +40,16 @@ module.exports.createBoatTrip = function createBoatTrip(req, res) {
 
 
 // Récupérer les données d'un voyage en bateau d'un user
-module.exports.getBoatTrip = function getBoatTrip(req, res, next) {
+module.exports.getBoatTrip = function getBoatTrip(req, res) {
     const user_id = req.user.id; // Récupération du user_id via le token
+
+    if (!user_id) {
+        return utils.writeJson(res, {
+            success: false,
+            errorCode: "MISSING_USER_ID",
+            message: "L'ID utilisateur est introuvable dans le token d'authentification."
+        }, 400);
+    }
 
     BoatTrip.getBoatTripByUserId(user_id)
         .then(boatTrips => {
@@ -67,6 +75,7 @@ module.exports.getBoatTrip = function getBoatTrip(req, res, next) {
             }, 500);
         });
 };
+
 
 
 /**
