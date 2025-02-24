@@ -3,57 +3,56 @@
 const { database } = require('../tables.js');
 
 
-/**
- * Creer une nouvelle reservation
- **/
-exports.createReservation = function (boatTrip_id, choosenDate, seatsBooked, totalPrice, user_id) {
+// Créer une nouvelle réservation
+exports.createReservation = function (boatTrip_id, choosenDate, seatsBooked, totalPrice, userId) {
   return new Promise((resolve, reject) => {
-    const query = `
-      INSERT INTO reservation (boatTrip_id, choosenDate, seatsBooked, totalPrice, user_id) 
-      VALUES (?, ?, ?, ?, ?);
-    `;
+    const getBoatTripCapacityQuery = `SELECT passengersNumber FROM boatTrip WHERE id = ?`;
 
-    database.run(query, [boatTrip_id, choosenDate, seatsBooked, totalPrice, user_id], function (err) {
+    database.get(getBoatTripCapacityQuery, [boatTrip_id], (err, boatTrip) => {
       if (err) {
-          reject({ error: "Erreur lors de la création de la réservation", details: err.message });
-      } else {
-          resolve({ success: "Réservation créée avec succès", reservationId: this.lastID });
+        console.error("Erreur lors de la récupération du boatTrip :", err);
+        return reject({ message: "Erreur interne du serveur.", code: "DB_ERROR" });
       }
+
+      if (!boatTrip) {
+        console.warn(`BoatTrip avec ID ${boatTrip_id} introuvable.`);
+        return reject({ message: "Le boatTrip spécifié n'existe pas.", code: "BOATTRIP_NOT_FOUND" });
+      }
+
+      const getTotalReservedSeatsQuery = `SELECT SUM(seatsBooked) AS totalSeats FROM reservation WHERE boatTrip_id = ?`;
+
+      database.get(getTotalReservedSeatsQuery, [boatTrip_id], (err, result) => {
+        if (err) {
+          console.error("Erreur lors de la vérification des réservations :", err);
+          return reject({ message: "Erreur interne du serveur.", code: "DB_ERROR" });
+        }
+
+        const insertReservationQuery = `
+          INSERT INTO reservation (boatTrip_id, choosenDate, seatsBooked, totalPrice, user_id) 
+          VALUES (?, ?, ?, ?, ?)`;
+
+        database.run(insertReservationQuery, [boatTrip_id, choosenDate, seatsBooked, totalPrice, userId], function (err) {
+          if (err) {
+            console.error("Erreur lors de l'insertion de la réservation :", err);
+            return reject({ message: "Erreur interne du serveur.", code: "DB_ERROR" });
+          }
+          resolve({ id: this.lastID });
+        });
+      });
     });
   });
 };
 
 
-
-/**
- * Recuperer les reservations par filtre
- **/
-exports.getFilteredReservations = function (filters) {
+// Récupérer les réservations de l'utilisateur avec option de filtrage par date
+exports.getReservationsByUser = function (userId) {
   return new Promise((resolve, reject) => {
-    // Liste des colonnes autorisées pour les filtres
-    const allowedFilters = ["user_id", "boatTrip_id", "choosenDate", "seatsBooked", "totalPrice"];
-    const whereClauses = [];
-    const values = [];
+    const query = `SELECT * FROM reservation WHERE user_id = ?`;
 
-    // Construire dynamiquement les clauses WHERE en fonction des filtres
-    Object.keys(filters).forEach((key) => {
-      if (allowedFilters.includes(key) && filters[key]) {
-        whereClauses.push(`${key} = ?`);
-        values.push(filters[key]);
-      }
-    });
-
-    // Construire la requête SQL
-    let query = `SELECT * FROM reservation`; // Récupère toutes les colonnes de la table `reservation`
-
-    if (whereClauses.length > 0) {
-      query += ` WHERE ${whereClauses.join(" AND ")}`;
-    }
-
-    // Exécuter la requête avec les paramètres
-    database.all(query, values, (err, rows) => {
+    database.all(query, [userId], (err, rows) => {
       if (err) {
-        return reject({ error: "Erreur lors de la récupération des réservations", details: err.message });
+        console.error("Erreur SQL lors de la récupération des réservations :", err);
+        return reject(new Error("DATABASE_ERROR"));
       }
       resolve(rows);
     });
@@ -61,24 +60,77 @@ exports.getFilteredReservations = function (filters) {
 };
 
 
+// Récupérer les réservations d'un utilisateur pour une date spécifique
+exports.getReservationsByDate = function (userId, choosenDate) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM reservation WHERE user_id = ? AND choosenDate = ?`;
 
-/**
- * Supprimer une reservation
- **/
-exports.deleteReservation = function(id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
+    database.all(query, [userId, choosenDate], (err, rows) => {
+      if (err) {
+        console.error("Erreur SQL lors de la récupération des réservations par date :", err);
+        return reject(new Error("DATABASE_ERROR"));
+      }
+      resolve(rows);
+    });
   });
-}
+};
 
 
+// Supprimer une réservation si elle appartient à l'utilisateur
+exports.deleteReservation = async function (id, userId) {
+  try {
+    const query = `DELETE FROM reservation WHERE id = ? AND user_id = ?`;
+    
+    return new Promise((resolve, reject) => {
+      database.run(query, [id, userId], function (err) {
+        if (err) {
+          console.error("Erreur lors de la suppression de la réservation :", err);
+          return reject(new Error("DATABASE_ERROR"));
+        }
+        resolve({ affectedRows: this.changes });
+      });
+    });
+  } catch (error) {
+    console.error("Erreur SQL lors de la suppression de la réservation :", error);
+    throw new Error("DATABASE_ERROR");
+  }
+};
 
-/**
- * Modifier une reservation
- **/
-exports.updateReservation = function(id,boatTrip_id,choosenDate,seatsBooked,totalPrice,user_id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
+
+// Mettre à jour une réservation si elle appartient à l'utilisateur
+exports.updateReservation = async function (id, updatedData, userId) {
+  try {
+    const allowedFields = ["choosenDate", "seatsBooked", "totalPrice", "boatTrip_id"];
+    const updates = [];
+    const values = [];
+
+    Object.keys(updatedData).forEach(key => {
+      if (allowedFields.includes(key) && updatedData[key] !== undefined) {
+        updates.push(`${key} = ?`);
+        values.push(updatedData[key]);
+      }
+    });
+
+    if (updates.length === 0) {
+      throw new Error("Aucune donnée valide à mettre à jour.");
+    }
+
+    values.push(id, userId);
+    const query = `UPDATE reservation SET ${updates.join(", ")} WHERE id = ? AND user_id = ?`;
+
+    return new Promise((resolve, reject) => {
+      database.run(query, values, function (err) {
+        if (err) {
+          console.error("Erreur SQL lors de la mise à jour de la réservation :", err);
+          return reject(new Error("DATABASE_ERROR"));
+        }
+        resolve({ affectedRows: this.changes });
+      });
+    });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de la réservation :", error);
+    throw new Error("DATABASE_ERROR");
+  }
+};
+
 

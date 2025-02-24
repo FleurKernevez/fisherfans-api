@@ -1,2120 +1,276 @@
 openapi: 3.1.0
 info:
-  title: Fisher Fans
-  description: "The purpose of this application is to share places on a boat for fishing\
-    \ or spearfishing trips, to rent and reserve boats and to manage a fishing log."
+  title: Fisher Fans API V2
+  description: |
+    API pour la gestion des utilisateurs, bateaux, sorties en mer et réservations.
   termsOfService: https://www.fisherFans.org/api-terms-of-use
   contact:
-    name: Fisher Fans api
+    name: Fisher Fans API
     url: https://www.fisherFans.org/about/staying-in-touch
     email: contact@fisherFansapi.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: "3"
+  version: "2.0"
 servers:
-- url: https://api.fisherFans.org/v1
-  description: Production server
-- url: https://api.fisherFans.staging.org/v1
-  description: Staging server
-- url: https://api.fisherFans.development.org/v1
-  description: Development server
+  - url: https://api.fisherFans.org/v2
+    description: Production server
+  - url: https://api.fisherFans.staging.org/v2
+    description: Staging server
+  - url: https://api.fisherFans.development.org/v2
+    description: Development server
+
+security:
+  - bearerAuth: []  # Authentification via token JWT
+
 paths:
   /user:
     post:
       tags:
-      - User
-      summary: Create
-      description: Create a new User
-      operationId: create-user
-      parameters:
-      - name: Email
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Password
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Lastname
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: FirstName
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Birthdate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: date
-      - name: PhoneNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Address
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PostalCode
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: City
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: LanguagesSpoken
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: UrlUserPicture
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: BoatLicenceNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: InsuranceNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Status
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          enum:
-          - Particulier
-          - Professionnel
-      - name: CompanyName
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: ActivityType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          enum:
-          - Location
-          - Guide de pêche
-      - name: SIRETNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: RCNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: BoatsList
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: FishingBook
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: BoatTripsList
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: ReservationsList
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      responses:
-        "200":
-          description: Successful create new User
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/User'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: User
-  /user/{id}:
-    get:
-      tags:
-      - User
-      summary: AllDatas
-      description: Returns all datas about user ID.
-      operationId: user-datas
-      parameters:
-      - name: id
-        in: path
+        - User
+      summary: Créer un utilisateur
+      operationId: createUser
+      requestBody:
         required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
       responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/User'
-                x-content-type: application/json
+        "201":
+          description: Utilisateur créé avec succès.
         "400":
-          description: Invalid ID supplied
-        "404":
-          description: User not found
+          description: Données invalides ou manquantes.
         "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: User
-    put:
-      tags:
-      - User
-      summary: MAJ
-      description: Mise à jour des données de l'utilisateur
-      operationId: maj-user
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: Lastname
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: FirstName
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Birthdate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PhoneNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Address
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PostalCode
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: City
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: LanguagesSpoken
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: UrlUserPicture
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: BoatLicenceNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: InsuranceNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Status
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: CompanyName
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: ActivityType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: SIRETNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: RCNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: BoatsList
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: FishingBook
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: BoatTripsList
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: ReservationsList
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/User'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: user not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: User
-    delete:
-      tags:
-      - User
-      summary: Delete
-      description: Delete user
-      operationId: delete-user
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful operation
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: User not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: User
-    patch:
-      tags:
-      - User
-      summary: MAJ
-      description: Mise à jour des données de l'utilisateur
-      operationId: maj-datas-user
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: Lastname
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: FirstName
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Birthdate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PhoneNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Address
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PostalCode
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: City
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: LanguagesSpoken
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: UrlUserPicture
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: BoatLicenceNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: InsuranceNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Status
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: CompanyName
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: ActivityType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: SIRETNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: RCNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: BoatsList
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: FishingBook
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: BoatTripsList
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: ReservationsList
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/User'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: user not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: User
-  /boat/{Latitude}{Longitude}:
-    get:
-      tags:
-      - Boat
-      summary: Get
-      description: Get boats inside latitude and longitude
-      operationId: get-boats-between-latitude-and-longitude
-      parameters:
-      - name: Latitude
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema: {}
-      - name: Longitude
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema: {}
-      responses:
-        "200":
-          description: Successful update
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Boat'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Ship not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Boat
-  /boat:
-    get:
-      tags:
-      - Boat
-      summary: Get
-      description: Get a Boat
-      operationId: get-boat
-      parameters:
-      - name: Latitude
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Longitude
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      responses:
-        "200":
-          description: Successful recuperation des bateaux qui ont une longitude et
-            latitude distincte
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Boat'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Boat not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Boat
+          description: Impossible de créer l'utilisateur.
+  
+  /user/login:
     post:
       tags:
-      - Boat
-      summary: Create
-      description: Create new boat
-      operationId: create-boat
-      parameters:
-      - name: Name
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Description
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Brand
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: ProductionYear
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: UrlBoatPicture
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: LicenseType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Type
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Equipements
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: CautionAmount
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: float
-      - name: CapacityMax
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: BedsNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: HomePort
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Latitude
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Longitude
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: EgineType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: EginePower
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: BoatLicenceNumber
-        in: query
+        - User
+      summary: Connexion utilisateur
+      operationId: loginUser
+      requestBody:
         required: true
-        style: form
-        explode: true
-        schema: {}
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
       responses:
         "200":
-          description: Register new ship successful
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Boat'
-                x-content-type: application/json
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Boat
-  /boat/{id}:
-    put:
-      tags:
-      - Boat
-      summary: Update
-      description: Update values for about boat
-      operationId: update-boat
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: Name
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Description
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Brand
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: ProductionYear
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: UrlBoatPicture
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: LicenseType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Type
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Equipements
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: CautionAmount
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: float
-      - name: CapacityMax
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: BedsNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: HomePort
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Latitude
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Longitude
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: EgineType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: EginePower
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful update
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Boat'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Ship not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Boat
-    delete:
-      tags:
-      - Boat
-      summary: Delete
-      description: Delete a boat
-      operationId: delete-boat
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful delete Boat
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Boat not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Boat
-    patch:
-      tags:
-      - Boat
-      summary: Update
-      description: Update values for about boat
-      operationId: update-boat-by-id
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: Name
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Description
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Brand
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: ProductionYear
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: UrlBoatPicture
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: LicenseType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Type
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Equipements
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: CautionAmount
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: float
-      - name: CapacityMax
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: BedsNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: HomePort
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Latitude
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Longitude
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: EgineType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: EginePower
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful update
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Boat'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Ship not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Boat
-  /reservation:
+          description: Connexion réussie avec token.
+        "401":
+          description: Identifiants invalides.
+  
+  /user/infos:
     get:
       tags:
-      - Reservation
-      summary: Get
-      description: Get a reservation
-      operationId: get-reservation
-      parameters:
-      - name: id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: BoatTrip_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: ChoosenDate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: SeatsBooked
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: TotalPrice
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: float
-      - name: User_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
+        - User
+      summary: Récupérer les infos utilisateur connecté
+      operationId: getUserInfo
+      security:
+        - bearerAuth: []
       responses:
         "200":
-          description: Successful get detail of Reservation
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Reservation'
-                x-content-type: application/json
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Reservation
+          description: Infos utilisateur récupérées.
+        "401":
+          description: Non autorisé.
+
+  /boats:
     post:
       tags:
-      - Reservation
-      summary: Create
-      description: Create new reservation
-      operationId: create-reservation
-      parameters:
-      - name: BoatTrip_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: ChoosenDate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: SeatsBooked
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: TotalPrice
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: float
-      - name: User_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful creation of Reservation
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Reservation'
-                x-content-type: application/json
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Reservation
-  /reservation/{id}:
-    put:
-      tags:
-      - Reservation
-      summary: Update
-      description: Update values for about reservation
-      operationId: update-reservation
-      parameters:
-      - name: id
-        in: path
+        - Boat
+      summary: Créer un bateau
+      operationId: createBoat
+      security:
+        - bearerAuth: []
+      requestBody:
         required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: BoatTrip_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: ChoosenDate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: SeatsBooked
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: TotalPrice
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: float
-      - name: User_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Boat"
       responses:
-        "200":
-          description: Successful update reservation
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Reservation'
-                x-content-type: application/json
+        "201":
+          description: Bateau créé avec succès.
         "400":
-          description: Invalid ID supplied
-        "404":
-          description: Reservation not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Reservation
-    delete:
-      tags:
-      - Reservation
-      summary: Delete
-      description: Delete a reservation
-      operationId: delete-reservation
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful delete reservation
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Reservation not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Reservation
-    patch:
-      tags:
-      - Reservation
-      summary: Update
-      description: Update values for about reservation
-      operationId: update-by-id-reservation
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: BoatTrip_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: ChoosenDate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: SeatsBooked
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: TotalPrice
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: float
-      - name: User_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful update reservation
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/Reservation'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Reservation not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: Reservation
-  /fishingBook:
-    post:
-      tags:
-      - FishingBook
-      summary: Create
-      description: Create new fishing book
-      operationId: create-FishingBook
-      parameters:
-      - name: FishName
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: UrlFishPicture
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Comment
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Size
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: Weight
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: FishingPlace
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: FishingDate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: date
-      - name: ReleasedFish
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: User_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful create new fishing book
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: FishingBook
-  /fishingBook/{id}/{User_id}:
-    put:
-      tags:
-      - FishingBook
-      summary: Update
-      description: Update fishing book by id page and id user
-      operationId: update-fishingBook-by-id
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: User_id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful update fishing book
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: FishingBook not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: FishingBook
-    patch:
-      tags:
-      - FishingBook
-      summary: Update
-      description: Update fishing book by id page and id user
-      operationId: update-fishing-Book-by-id
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: User_id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful update fishing book
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: FishingBook not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: FishingBook
-  /fishingBook/{id}:
-    put:
-      tags:
-      - FishingBook
-      summary: Update
-      description: Update values for about fishing book
-      operationId: update-FishingBook
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: FishName
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: UrlFishPicture
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Comment
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Size
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: Weight
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: FishingPlace
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: FishingDate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: date
-      - name: ReleasedFish
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: User_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful update fishing book
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/FishingBook'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Fishing book not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: FishingBook
-    delete:
-      tags:
-      - FishingBook
-      summary: Delete
-      description: Delete a fishing book
-      operationId: delete-FishingBook
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful delete fishing book
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Fishing Book not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: FishingBook
-    patch:
-      tags:
-      - FishingBook
-      summary: Update
-      description: Update values for about fishing book
-      operationId: update-Fishing-Book
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: FishName
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: UrlFishPicture
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Comment
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Size
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: Weight
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: FishingPlace
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: FishingDate
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: date
-      - name: ReleasedFish
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: User_id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful update fishing book
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/FishingBook'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Fishing book not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: FishingBook
+          description: Données invalides.
+        "403":
+          description: Permission refusée.
+
   /boatTrip:
-    get:
-      tags:
-      - BoatTrip
-      summary: Get
-      description: Get values for about a boat tri
-      operationId: get-boatTrip
-      parameters:
-      - name: id
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: Title
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PracticalInformations
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Type
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PriceType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Dates
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Times
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PassengersNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: Price
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: User_id
-        in: query
-        required: true
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: Boat_id
-        in: query
-        required: true
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful Create boat trip
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/BoatTrip'
-                x-content-type: application/json
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: BoatTrip
     post:
       tags:
-      - BoatTrip
-      summary: Create
-      description: Create values for about a boat tri
-      operationId: create-boatTrip
-      parameters:
-      - name: Title
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PracticalInformations
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Type
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PriceType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Dates
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: date
-      - name: Times
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: time
-      - name: PassengersNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: Price
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: User_id
-        in: query
+        - BoatTrip
+      summary: Créer une sortie en mer
+      operationId: createBoatTrip
+      security:
+        - bearerAuth: []
+      requestBody:
         required: true
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: Boat_id
-        in: query
-        required: true
-        style: form
-        explode: true
-        schema:
-          format: int32
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoatTrip"
       responses:
-        "200":
-          description: Successful Create boat trip
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/BoatTrip'
-                x-content-type: application/json
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: BoatTrip
-  /boatTrip/{id}:
-    put:
-      tags:
-      - BoatTrip
-      summary: Update
-      description: Update values for about boat trip
-      operationId: update-boatTrip
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: Title
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PracticalInformations
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Type
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PriceType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Dates
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Times
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PassengersNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: Price
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: User_id
-        in: query
-        required: true
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: Boat_id
-        in: query
-        required: true
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful update boat trip
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/BoatTrip'
-                x-content-type: application/json
+        "201":
+          description: Sortie en mer créée.
         "400":
-          description: Invalid ID supplied
-        "404":
-          description: Boat trip not found
+          description: Données invalides.
         "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: BoatTrip
-    delete:
+          description: Impossible de créer la sortie.
+  
+  /reservation:
+    post:
       tags:
-      - BoatTrip
-      summary: Delete
-      description: Delete an boat trip
-      operationId: delete-BoatTrip
-      parameters:
-      - name: id
-        in: path
+        - Reservation
+      summary: Créer une réservation
+      operationId: createReservation
+      security:
+        - bearerAuth: []
+      requestBody:
         required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reservation"
       responses:
-        "200":
-          description: Successful delete boat trip
+        "201":
+          description: Réservation créée avec succès.
         "400":
-          description: Invalid ID supplied
+          description: Données invalides.
         "404":
-          description: Boat Trip not found
+          description: Sortie en mer non trouvée.
         "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: BoatTrip
-    patch:
-      tags:
-      - BoatTrip
-      summary: Update
-      description: Update values for about boat trip
-      operationId: update-boat-Trip
-      parameters:
-      - name: id
-        in: path
-        required: true
-        style: simple
-        explode: false
-        schema:
-          format: int32
-      - name: Title
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PracticalInformations
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Type
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PriceType
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Dates
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: Times
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema: {}
-      - name: PassengersNumber
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: Price
-        in: query
-        required: false
-        style: form
-        explode: true
-        schema:
-          format: double
-      - name: User_id
-        in: query
-        required: true
-        style: form
-        explode: true
-        schema:
-          format: int32
-      - name: Boat_id
-        in: query
-        required: true
-        style: form
-        explode: true
-        schema:
-          format: int32
-      responses:
-        "200":
-          description: Successful update boat trip
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/BoatTrip'
-                x-content-type: application/json
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Boat trip not found
-        "422":
-          description: Server was unable to carry out the requested instructions.
-      x-swagger-router-controller: BoatTrip
+          description: Capacité du bateau dépassée.
+  
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     User:
+      type: object
       properties:
         id:
-          format: int32
-        Lastname: {}
-        FirstName: {}
-        Birthdate: {}
-        PhoneNumber: {}
-        Address: {}
-        PostalCode: {}
-        City: {}
-        LanguagesSpoken: {}
-        UrlUserPicture: {}
-        BoatLicenceNumber: {}
-        InsuranceNumber: {}
-        Status: {}
-        CompanyName: {}
-        ActivityType: {}
-        SIRETNumber: {}
-        RCNumber: {}
-        BoatsList: {}
-        FishingBook: {}
-        BoatTripsList: {}
-        ReservationsList: {}
-      xml:
-        name: user
+          type: integer
+        lastname:
+          type: string
+          maxLength: 50
+        firstname:
+          type: string
+          maxLength: 50
+        birthdate:
+          type: string
+          format: date
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        phoneNumber:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        status:
+          type: string
+          enum: ["particulier", "professionnel"]
+      required:
+        - lastname
+        - firstname
+        - email
+        - password
+
     Boat:
+      type: object
       properties:
         id:
-          format: int32
-        Name: {}
-        Description: {}
-        Brand: {}
-        ProductionYear:
-          format: int32
-        UrlBoatPicture: {}
-        LicenseType: {}
-        Type: {}
-        Equipements: {}
-        CautionAmount: {}
-        CapacityMax:
-          format: int32
-        BedsNumber:
-          format: int32
-        HomePort:
-          format: int32
-        Latitude:
-          format: int32
-        Longitude:
-          format: int32
-        EgineType: {}
-        EginePower:
-          format: int32
-    Reservation:
-      properties:
-        id:
-          format: int32
-        BoatTrip_id: {}
-        ChoosenDate:
-          format: date
-        SeatsBooked:
-          format: int32
-        TotalPrice:
-          format: int32
-        User_id:
-          format: int32
-    FishingBook:
-      properties:
-        id:
-          format: int32
-        FishName:
-          format: int32
-        UrlFishPicture: {}
-        Comment: {}
-        Size:
-          format: double
-        Weight:
-          format: double
-        FishingPlace: {}
-        FishingDate:
-          format: date
-        ReleasedFish: {}
-        User_id:
-          format: int32
+          type: integer
+        name:
+          type: string
+          maxLength: 100
+        brand:
+          type: string
+        productionYear:
+          type: integer
+        type:
+          type: string
+        capacityMax:
+          type: integer
+        enginePower:
+          type: integer
+        user_id:
+          type: integer
+      required:
+        - name
+        - brand
+        - productionYear
+        - type
+        - user_id
+
     BoatTrip:
+      type: object
       properties:
         id:
-          format: int32
-        Title: {}
-        PracticalInformations: {}
-        Type: {}
-        PriceType: {}
-        Dates: {}
-        Times: {}
-        PassengersNumber:
-          format: int32
-        Price:
-          format: double
-        User_id:
-          format: int32
-        Boat_id:
-          format: int32
+          type: integer
+        title:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        passengersNumber:
+          type: integer
+        price:
+          type: number
+          format: float
+        user_id:
+          type: integer
+        boat_id:
+          type: integer
+      required:
+        - title
+        - startDate
+        - endDate
+        - passengersNumber
+        - price
+        - user_id
+        - boat_id
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+        boatTrip_id:
+          type: integer
+        choosenDate:
+          type: string
+          format: date
+        seatsBooked:
+          type: integer
+        totalPrice:
+          type: number
+          format: float
+        user_id:
+          type: integer
+      required:
+        - boatTrip_id
+        - choosenDate
+        - seatsBooked
+        - totalPrice
+        - user_id

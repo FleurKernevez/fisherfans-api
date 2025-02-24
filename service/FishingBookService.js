@@ -1,114 +1,40 @@
 'use strict';
 
+const { database } = require('../tables.js');
 
-/**
- * Create
- * Create new fishing book
- *
- * fishName   (optional)
- * urlFishPicture   (optional)
- * comment   (optional)
- * size   (optional)
- * weight   (optional)
- * fishingPlace   (optional)
- * fishingDate   (optional)
- * releasedFish   (optional)
- * user_id   (optional)
- * no response value expected for this operation
- **/
-exports.createFishingBook = function(fishName,urlFishPicture,comment,size,weight,fishingPlace,fishingDate,releasedFish,user_id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
+// Créer un FishingBook
+exports.createFishingBook = function (title, description, user_id) {
+  return new Promise((resolve, reject) => {
+    const query = `INSERT INTO fishingBook (title, description, user_id) VALUES (?, ?, ?)`;
+
+    database.run(query, [title, description, user_id], function (err) {
+      if (err) {
+        return reject(new Error("DATABASE_ERROR"));
+      }
+
+      resolve({
+        message: "FishingBook créé avec succès.",
+        fishingBookId: this.lastID,
+        title,
+        description
+      });
+    });
   });
-}
+};
 
 
-/**
- * Delete
- * Delete a fishing book
- *
- * id  
- * no response value expected for this operation
- **/
-exports.deleteFishingBook = function(id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
+// Récupérer un FishingBook par son ID
+exports.getFishingBookById = function (fishingBookId) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT id, user_id FROM fishingBook WHERE id = ?`;
+
+    database.get(query, [fishingBookId], (err, row) => {
+      if (err) {
+        return reject(new Error("DATABASE_ERROR"));
+      }
+      resolve(row);
+    });
   });
-}
+};
 
-
-/**
- * Update
- * Update values for about fishing book
- *
- * id  
- * fishName   (optional)
- * urlFishPicture   (optional)
- * comment   (optional)
- * size   (optional)
- * weight   (optional)
- * fishingPlace   (optional)
- * fishingDate   (optional)
- * releasedFish   (optional)
- * user_id   (optional)
- * no response value expected for this operation
- **/
-exports.updateFishingBook = function(id,fishName,urlFishPicture,comment,size,weight,fishingPlace,fishingDate,releasedFish,user_id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
-
-
-/**
- * Update
- * Update fishing book by id page and id user
- *
- * id  
- * user_id  
- * no response value expected for this operation
- **/
-exports.updateFishingBookById = function(id,user_id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
-
-
-/**
- * Update
- * Update fishing book by id page and id user
- *
- * id  
- * user_id  
- * no response value expected for this operation
- **/
-exports.updateFishingBookById_0 = function(id,user_id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
-
-
-/**
- * Update
- * Update values for about fishing book
- *
- * id  
- * fishName   (optional)
- * urlFishPicture   (optional)
- * comment   (optional)
- * size   (optional)
- * weight   (optional)
- * fishingPlace   (optional)
- * fishingDate   (optional)
- * releasedFish   (optional)
- * user_id   (optional)
- * no response value expected for this operation
- **/
-exports.updateFishingBook_0 = function(id,fishName,urlFishPicture,comment,size,weight,fishingPlace,fishingDate,releasedFish,user_id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
-  });
-}
 

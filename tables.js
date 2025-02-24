@@ -9,6 +9,7 @@ const database = new sqlite3.Database("./fisher-fans.db", (err) => {
     }
 });
 
+
 // Créer la table 'user' si elle n'existe pas
 const createUserTable = () => {
     const query = `
@@ -48,6 +49,7 @@ const createUserTable = () => {
     });
 }
 
+
 // Créer la table 'boat' si elle n'existe pas
 const createBoatTable = () => {
     const query = `
@@ -60,7 +62,7 @@ const createBoatTable = () => {
             urlBoatPicture TEXT,
             licenceType TEXT CHECK (licenceType IN ('côtier', 'fluvial')),                     
             type TEXT CHECK (type IN ('open', 'cabine', 'catamaran', 'voilier', 'jet-ski', 'canoë')),
-            equipment TEXT CHECK (equipment IN ('sondeur', 'vivier', 'échelle', 'GPS', 'porte-cannes', 'radio VHF')),
+            equipment TEXT,
             cautionAmount REAL,
             capacityMax INTEGER,
             bedsNumber INTEGER,
@@ -86,6 +88,7 @@ const createBoatTable = () => {
     });
 }
 
+
 // Créer la table 'boatTrip' si elle n'existe pas
 const createBoatTripTable = () => {
     const query = `
@@ -101,10 +104,8 @@ const createBoatTripTable = () => {
             price REAL,
             user_id INTEGER,
             boat_id INTEGER,
-            reservation_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES user(id),
-            FOREIGN KEY (boat_id) REFERENCES boat(id),
-            FOREIGN KEY (reservation_id) REFERENCES reservation(id)   
+            FOREIGN KEY (boat_id) REFERENCES boat(id)
         );
     `;
     
@@ -117,6 +118,7 @@ const createBoatTripTable = () => {
         }
     });
 }
+
 
 // Créer la table 'reservation' si elle n'existe pas
 const createReservationTable = () => {
@@ -143,6 +145,29 @@ const createReservationTable = () => {
     });
 }
 
+
+// Créer la table 'fishingbook' si elle n'existe pas
+const createFishingBookTable = () => {
+    const query = `
+        CREATE TABLE IF NOT EXISTS "fishingBook" (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,  
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+        );
+    `;
+
+    database.run(query, function (err) {
+        if (err) {
+            console.error('Erreur lors de la création de la table "fishingBook":', err.message);
+        } else {
+            console.log('Table "fishingBook" créée ou déjà existante.');
+        }
+    });
+};
+
+
 // Créer la table 'bookPage' si elle n'existe pas
 const createBookPageTable = () => {
     const query = `
@@ -155,21 +180,23 @@ const createBookPageTable = () => {
             weight REAL,
             fishingPlace TEXT,
             fishingDate TEXT,
-            releasedFish BLOB,
-            user_id INTEGER,
-            FOREIGN KEY (user_id) REFERENCES user(id)
+            releasedFish INTEGER CHECK (releasedFish IN (0, 1)),
+            user_id INTEGER NOT NULL,
+            fishingBook_id INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+            FOREIGN KEY (fishingBook_id) REFERENCES fishingBook(id) ON DELETE CASCADE
         );
     `;
-    
-    // Exécuter la requête pour créer la table
-    database.run(query, function(err) {
+
+    database.run(query, function (err) {
         if (err) {
             console.error('Erreur lors de la création de la table "bookPage":', err.message);
         } else {
             console.log('Table "bookPage" créée ou déjà existante.');
         }
     });
-}
+};
+
 
 /**
  * Execute la création des toutes les tables si elles n'existent pas déjà
@@ -184,6 +211,7 @@ const createAllTables = () => {
     createBoatTable();
     createBoatTripTable();
     createReservationTable();
+    createFishingBookTable();
     createBookPageTable();
 }
 

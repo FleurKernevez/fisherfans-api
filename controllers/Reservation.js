@@ -1,117 +1,162 @@
 'use strict';
 
-var utils = require('../utils/writer.js');
-var Reservation = require('../service/ReservationService');
-
+const utils = require('../utils/writer.js');
+const Reservation = require('../service/ReservationService');
 
 /**
- * Fonction pour créer une nouvelle réservation
+ * Créer une réservation
  */
 module.exports.createReservation = function createReservation(req, res) {
-  const { boatTrip_id, choosenDate, seatsBooked, totalPrice, user_id } = req.body;
+  const userId = req.user.id; // Récupérer l'ID de l'utilisateur authentifié depuis le token
+  const { boatTrip_id, choosenDate, seatsBooked, totalPrice } = req.body;
 
-
-  if (!boatTrip_id || !choosenDate || !seatsBooked || !totalPrice || !user_id) {
-    return res.status(400).json({ error: "Tous les champs sont requis." });
+  // Vérification des champs obligatoires
+  if (!boatTrip_id || !choosenDate || !seatsBooked || !totalPrice) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "MISSING_FIELDS",
+      message: "Tous les champs (boatTrip_id, choosenDate, seatsBooked, totalPrice) sont requis."
+    });
   }
 
-  Reservation.createReservation(boatTrip_id, choosenDate, seatsBooked, totalPrice, user_id)
-    .then((response) => {
-      res.status(201).json(response);
-    })
-    .catch((error) => {
-      console.error("Erreur lors de la création :", error); 
-      res.status(500).json(error);
-    });
-};
-
-
-
-/**
- * Récupérer une liste de réservations filtrées
- */
-module.exports.getReservations = function getReservations(req, res) {
-    const filters = req.query; // Récupérer les filtres depuis les paramètres de requête
-
-    Reservation.getFilteredReservations(filters)
-      .then((reservations) => {
-        res.status(200).json(reservations);
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération des réservations :", error);
-        res.status(500).json(error);
+  // Création de la réservation
+  Reservation.createReservation(boatTrip_id, choosenDate, seatsBooked, totalPrice, userId)
+    .then(response => {
+      return res.status(201).json({
+        success: true,
+        message: "Réservation créée avec succès.",
+        reservationId: response.id
       });
-};
-
-
-
-/**
- * Fonction pour supprimer une réservation
- */
-module.exports.deleteReservation = function deleteReservation (req, res, next, id) {
-  Reservation.deleteReservation(id)
-    .then(function (response) {
-      utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch(error => {
+      console.error("Erreur lors de la création de la réservation :", error.message);
+
+      if (error.code === "BOATTRIP_NOT_FOUND") {
+        return res.status(404).json({
+          success: false,
+          errorCode: "BOATTRIP_NOT_FOUND",
+          message: "Le boatTrip spécifié n'existe pas."
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        errorCode: "SERVER_ERROR",
+        message: "Erreur interne du serveur."
+      });
     });
 };
 
 
+/**
+ * Récupérer les réservations de l'utilisateur 
+ */
+module.exports.reservationDatas = function reservationDatas(req, res) {
+  const userId = req.user.id; // Récupérer l'ID de l'utilisateur authentifié
+
+  Reservation.getReservationsByUser(userId)
+    .then(reservations => {
+      res.status(200).json({
+        success: true,
+        message: "Réservations récupérées avec succès.",
+        data: reservations
+      });
+    })
+    .catch(error => {
+      console.error("Erreur lors de la récupération des réservations :", error.message);
+      res.status(500).json({ success: false, error: "Erreur interne du serveur." });
+    });
+};
+
 
 /**
- * Fonction pour mettre à jour les données d'une réservation
+ * Récupérer les réservations de l'utilisateur par date
  */
-module.exports.updateByIdReservation = function updateByIdReservation (
-  req, 
-  res, 
-  next, 
-  id, 
-  boatTrip_id, 
-  choosenDate, 
-  seatsBooked, 
-  totalPrice, 
-  user_id
-) {
-  Reservation.updateByIdReservation(
-    id, 
-    boatTrip_id, 
-    choosenDate, 
-    seatsBooked, 
-    totalPrice, 
-    user_id
-  )
-  .then(function (response) {
-    utils.writeJson(res, response);
-  })
-  .catch(function (response) {
-    utils.writeJson(res, response);
-  });
+module.exports.getReservationsByDate = function getReservationsByDate(req, res) {
+  const userId = req.user.id; // Récupérer l'ID de l'utilisateur authentifié
+  const { date } = req.query; // Date passée en paramètre
+
+  if (!date) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "MISSING_DATE",
+      message: "Le paramètre 'date' est requis pour filtrer les réservations."
+    });
+  }
+
+  Reservation.getReservationsByDate(userId, date)
+    .then(reservations => {
+      res.status(200).json({
+        success: true,
+        message: `Réservations pour la date ${date} récupérées avec succès.`,
+        data: reservations
+      });
+    })
+    .catch(error => {
+      console.error("Erreur lors de la récupération des réservations par date :", error.message);
+      res.status(500).json({ success: false, error: "Erreur interne du serveur." });
+    });
+};
+
+
+/**
+ * Supprimer une réservation si elle appartient à l'utilisateur
+ */
+module.exports.deleteReservation = async function deleteReservation(req, res) {
+  try {
+    const userId = req.user.id; // Récupérer l'ID utilisateur depuis le token
+    const { id } = req.params; // Récupérer l'ID de la réservation
+
+    if (!id) {
+      return res.status(400).json({ error: "L'ID de la réservation est requis." });
+    }
+
+    const response = await Reservation.deleteReservation(id, userId);
+    
+    if (response.affectedRows === 0) {
+      return res.status(403).json({ error: "Action non autorisée ou réservation non trouvée." });
+    }
+    
+    return res.status(200).json({ message: "Réservation supprimée avec succès." });
+
+  } catch (error) {
+    console.error("Erreur lors de la suppression de la réservation :", error.message);
+    res.status(500).json({ error: "Erreur interne du serveur." });
+  }
+};
+
+
+/**
+ * Mettre à jour une réservation si elle appartient à l'utilisateur
+ */
+module.exports.majReservation = async function majReservation(req, res) {
+  try {
+    const userId = req.user.id; // Récupérer l'ID utilisateur depuis le token
+    const { id } = req.params; // Récupérer l'ID de la réservation
+    const updatedData = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: "L'ID de la réservation est requis." });
+    }
+
+    const response = await Reservation.updateReservation(id, updatedData, userId);
+
+    if (response.affectedRows === 0) {
+      return res.status(403).json({ error: "Action non autorisée ou réservation non trouvée." });
+    }
+    
+    return res.status(200).json({ message: "Réservation mise à jour avec succès." });
+
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de la réservation :", error.message);
+    res.status(500).json({ error: "Erreur interne du serveur." });
+  }
 };
 
 
 
-/**
- * Fonction pour mettre à jour les données d'une réservation 
 
- */
-module.exports.updateReservation = function updateReservation (
-  req, 
-  res, 
-  next, 
-  id, 
-  boatTrip_id, 
-  choosenDate, 
-  seatsBooked, 
-  totalPrice, 
-  user_id
-) {
-  Reservation.updateReservation(id, boatTrip_id, choosenDate, seatsBooked, totalPrice, user_id)
-  .then(function (response) {
-    utils.writeJson(res, response);
-  })
-  .catch(function (response) {
-    utils.writeJson(res, response);
-  });
-};
+
+
+
+
