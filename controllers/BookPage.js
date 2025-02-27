@@ -3,12 +3,14 @@
 const utils = require('../utils/writer.js');
 const BookPageService = require('../service/BookPageService');
 
-// Ajouter une page à un FishingBook existant
+
+// Ajouter une page à un FishingBook existant 
 module.exports.createBookPage = async function createBookPage(req, res) {
     try {
         const userId = req.user.id; // ID de l'utilisateur authentifié
+        const fishingBookId = req.params.fishingBookId; 
+
         const {
-            fishingBook_id,
             fishName,
             urlFishPicture,
             comment,
@@ -19,8 +21,8 @@ module.exports.createBookPage = async function createBookPage(req, res) {
             releasedFish
         } = req.body;
 
-        // Vérification des paramètres requis
-        if (!fishingBook_id || isNaN(fishingBook_id)) {
+        // Vérification de l'ID du FishingBook dans l'URL
+        if (!fishingBookId || isNaN(fishingBookId)) {
             return utils.writeJson(res, {
                 success: false,
                 errorCode: "INVALID_FISHINGBOOK_ID",
@@ -29,7 +31,7 @@ module.exports.createBookPage = async function createBookPage(req, res) {
         }
 
         // Vérifier si le FishingBook existe et appartient bien à l'utilisateur
-        const fishingBook = await BookPageService.getFishingBookById(fishingBook_id);
+        const fishingBook = await BookPageService.getFishingBookById(fishingBookId);
         if (!fishingBook) {
             return utils.writeJson(res, {
                 success: false,
@@ -46,16 +48,31 @@ module.exports.createBookPage = async function createBookPage(req, res) {
             }, 403);
         }
 
-        // Ajouter la nouvelle page
+        // Ajouter la nouvelle page avec l'ID du FishingBook venant de l'URL
         const newBookPage = await BookPageService.createBookPage({
-            fishingBook_id, fishName, urlFishPicture, comment, size, weight, fishingPlace, fishingDate, releasedFish, user_id: userId
+            fishingBook_id: fishingBookId, 
+            fishName, 
+            urlFishPicture, 
+            comment, 
+            size, 
+            weight, 
+            fishingPlace, 
+            fishingDate, 
+            releasedFish, 
+            user_id: userId
         });
 
         return utils.writeJson(res, {
             success: true,
             message: "Page ajoutée au FishingBook avec succès.",
-            data: newBookPage
+            data: {
+                bookPageId: newBookPage.bookPageId,
+                fishingBookId: Number(fishingBookId), 
+                fishName: newBookPage.fishName,
+                fishingDate: newBookPage.fishingDate
+            }
         }, 201);
+        
 
     } catch (error) {
         console.error("Erreur lors de l'ajout de la page dans le FishingBook :", error);
@@ -66,6 +83,7 @@ module.exports.createBookPage = async function createBookPage(req, res) {
         }, 500);
     }
 };
+
 
 
 // Récupérer toutes les pages du carnet de pêche d’un utilisateur 

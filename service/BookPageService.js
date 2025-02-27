@@ -2,6 +2,7 @@
 
 const { database } = require('../tables.js');
 
+
 // Ajouter une page (BookPage) à un FishingBook
 exports.createBookPage = function (bookPageData) {
     return new Promise((resolve, reject) => {
@@ -11,9 +12,16 @@ exports.createBookPage = function (bookPageData) {
         `;
 
         const values = [
-            bookPageData.fishingBook_id, bookPageData.fishName, bookPageData.urlFishPicture, 
-            bookPageData.comment, bookPageData.size, bookPageData.weight, 
-            bookPageData.fishingPlace, bookPageData.fishingDate, bookPageData.releasedFish, bookPageData.user_id
+            bookPageData.fishingBook_id, 
+            bookPageData.fishName, 
+            bookPageData.urlFishPicture, 
+            bookPageData.comment, 
+            bookPageData.size, 
+            bookPageData.weight, 
+            bookPageData.fishingPlace, 
+            bookPageData.fishingDate, 
+            bookPageData.releasedFish, 
+            bookPageData.user_id
         ];
 
         database.run(query, values, function (err) {
@@ -30,6 +38,7 @@ exports.createBookPage = function (bookPageData) {
         });
     });
 };
+
 
 
 // Récupérer toutes les pages du carnet de pêche d’un utilisateur (BF19)

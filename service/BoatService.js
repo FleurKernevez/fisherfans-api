@@ -104,7 +104,9 @@ exports.getBoatsInBoundingBox = function (minLatitude, maxLatitude, minLongitude
         AND latitude2 BETWEEN ? AND ? AND longitude2 BETWEEN ? AND ?
     `;
 
-    database.all(sql, [minLatitude, maxLatitude, minLongitude, maxLongitude, minLatitude, maxLatitude, minLongitude, maxLongitude], (error, rows) => {
+    database.all(sql, 
+      [minLatitude, maxLatitude, minLongitude, maxLongitude, minLatitude, maxLatitude, minLongitude, maxLongitude]
+      , (error, rows) => {
       if (error) {
         console.error("Erreur SQL lors de la récupération des bateaux :", error);
         return reject(new Error("DATABASE_ERROR"));

@@ -13,7 +13,7 @@ exports.createUser = async function (userData) {
     // Vérifier si l'email existe déjà
     const emailExists = await exports.isEmailExists(userData.email);
     if (emailExists) {
-      throw { message: `L'email ${userData.email} est déjà utilisé.`, code: "EMAIL_ALREADY_EXISTS" };
+      return Promise.reject({ message: `L'email ${userData.email} est déjà utilisé.`, code: "EMAIL_ALREADY_EXISTS", status: 400 });
     }
 
     // Définition des champs à insérer
@@ -28,9 +28,6 @@ exports.createUser = async function (userData) {
     const query = `INSERT INTO user (${fields.join(", ")}) VALUES (${placeholders});`;
 
     const values = fields.map(field => userData[field] !== undefined ? userData[field] : null);
-
-    console.log("DEBUG: Exécution SQL ->", query);
-    console.log("DEBUG: Valeurs insérées ->", values);
 
     return new Promise((resolve, reject) => {
       database.run(query, values, function (err) {
@@ -232,9 +229,9 @@ exports.majUser = function (userId, updatedData) {
     const values = [];
 
     Object.keys(updatedData).forEach(key => {
-      if (allowedFields.includes(key) && updatedData[key]) {
+      if (allowedFields.includes(key)) {  // ✅ On ne vérifie plus si la valeur est "truthy"
         updates.push(`${key} = ?`);
-        values.push(updatedData[key]);
+        values.push(updatedData[key] !== "" ? updatedData[key] : null); // ✅ Remplace "" par NULL
       }
     });
 

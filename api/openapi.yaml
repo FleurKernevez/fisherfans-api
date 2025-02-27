@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   title: Fisher Fans API V2
   description: |
@@ -12,6 +12,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: "2.0"
+
 servers:
   - url: https://api.fisherFans.org/v2
     description: Production server
@@ -24,6 +25,7 @@ security:
   - bearerAuth: []  # Authentification via token JWT
 
 paths:
+  # Utilisateurs
   /user:
     post:
       tags:
@@ -43,7 +45,7 @@ paths:
           description: Données invalides ou manquantes.
         "422":
           description: Impossible de créer l'utilisateur.
-  
+
   /user/login:
     post:
       tags:
@@ -67,7 +69,7 @@ paths:
           description: Connexion réussie avec token.
         "401":
           description: Identifiants invalides.
-  
+
   /user/infos:
     get:
       tags:
@@ -82,6 +84,7 @@ paths:
         "401":
           description: Non autorisé.
 
+  # Bateaux
   /boats:
     post:
       tags:
@@ -102,54 +105,83 @@ paths:
         "400":
           description: Données invalides.
         "403":
-          description: Permission refusée.
+          description: Permission refusée
 
-  /boatTrip:
-    post:
+    get:
       tags:
-        - BoatTrip
-      summary: Créer une sortie en mer
-      operationId: createBoatTrip
+        - Boat
+      summary: Récupérer les bateaux de l'utilisateur connecté
+      operationId: getUserBoats
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BoatTrip"
       responses:
-        "201":
-          description: Sortie en mer créée.
-        "400":
-          description: Données invalides.
-        "422":
-          description: Impossible de créer la sortie.
-  
-  /reservation:
-    post:
-      tags:
-        - Reservation
-      summary: Créer une réservation
-      operationId: createReservation
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Reservation"
-      responses:
-        "201":
-          description: Réservation créée avec succès.
-        "400":
-          description: Données invalides.
+        "200":
+          description: Liste des bateaux récupérée avec succès.
         "404":
-          description: Sortie en mer non trouvée.
-        "422":
-          description: Capacité du bateau dépassée.
-  
+          description: Aucun bateau trouvé.
+
+  /boats/{boatId}:
+    put:
+      tags:
+        - Boat
+      summary: Mettre à jour un bateau
+      operationId: updateBoat
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: boatId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Boat"
+      responses:
+        "200":
+          description: Bateau mis à jour avec succès.
+        "403":
+          description: L'utilisateur n'est pas propriétaire du bateau.
+        "404":
+          description: Bateau non trouvé.
+
+  # Recherche de bateaux dans une bounding box
+  /boats/search:
+    get:
+      tags:
+        - Boat
+      summary: Rechercher des bateaux dans une zone géographique donnée
+      operationId: searchBoatsBoundingBox
+      parameters:
+        - name: minLatitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: maxLatitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: minLongitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: maxLongitude
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Liste des bateaux trouvés dans la zone.
+        "404":
+          description: Aucun bateau trouvé.
+
 components:
   securitySchemes:
     bearerAuth:
@@ -160,33 +192,23 @@ components:
   schemas:
     User:
       type: object
+      description: "Modèle représentant un utilisateur."
       properties:
         id:
           type: integer
+          description: "Identifiant unique de l'utilisateur."
         lastname:
           type: string
           maxLength: 50
         firstname:
           type: string
           maxLength: 50
-        birthdate:
-          type: string
-          format: date
         email:
           type: string
           format: email
         password:
           type: string
           minLength: 6
-        phoneNumber:
-          type: string
-        address:
-          type: string
-        city:
-          type: string
-        status:
-          type: string
-          enum: ["particulier", "professionnel"]
       required:
         - lastname
         - firstname
@@ -195,9 +217,11 @@ components:
 
     Boat:
       type: object
+      description: "Modèle représentant un bateau."
       properties:
         id:
           type: integer
+          description: "Identifiant unique du bateau."
         name:
           type: string
           maxLength: 100
@@ -205,72 +229,7 @@ components:
           type: string
         productionYear:
           type: integer
-        type:
-          type: string
-        capacityMax:
-          type: integer
-        enginePower:
-          type: integer
-        user_id:
-          type: integer
       required:
         - name
         - brand
         - productionYear
-        - type
-        - user_id
-
-    BoatTrip:
-      type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        startDate:
-          type: string
-          format: date
-        endDate:
-          type: string
-          format: date
-        passengersNumber:
-          type: integer
-        price:
-          type: number
-          format: float
-        user_id:
-          type: integer
-        boat_id:
-          type: integer
-      required:
-        - title
-        - startDate
-        - endDate
-        - passengersNumber
-        - price
-        - user_id
-        - boat_id
-
-    Reservation:
-      type: object
-      properties:
-        id:
-          type: integer
-        boatTrip_id:
-          type: integer
-        choosenDate:
-          type: string
-          format: date
-        seatsBooked:
-          type: integer
-        totalPrice:
-          type: number
-          format: float
-        user_id:
-          type: integer
-      required:
-        - boatTrip_id
-        - choosenDate
-        - seatsBooked
-        - totalPrice
-        - user_id

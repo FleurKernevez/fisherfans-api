@@ -57,7 +57,11 @@ exports.createUser = function createUser(req, res) {
     })
     .catch(error => {
       console.error("Erreur lors de la création de l'utilisateur :", error);
-      return res.status(500).json({
+    
+      // Vérifie si l'erreur a un code personnalisé
+      const statusCode = error.status || 500;
+      
+      return res.status(statusCode).json({
         message: error.message || "Erreur interne du serveur.",
         code: error.code || "SERVER_ERROR"
       });
